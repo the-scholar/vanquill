@@ -1,8 +1,21 @@
 #include <iostream>
 #include <windows.h>
+#include <wingdi.h>
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	switch (msg) {
+	case WM_ERASEBKGND: {
+		HDC hdc = (HDC) wParam;
+		RECT rect;
+		GetClientRect(hwnd, &rect);
+
+		HBRUSH hBrush = CreateSolidBrush(0xE5F5FF);
+		FillRect(hdc, &rect, hBrush);
+		DeleteObject(hBrush);
+
+		return 1;
+	}
+
 	case WM_COMMAND:
 
 		break;
