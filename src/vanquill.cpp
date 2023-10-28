@@ -6,21 +6,21 @@ void drawNote(const HDC &hdc, const int x, const int y) {
 	PAINTSTRUCT ps;
 
 	// Set the border color, background color, and stroke width
-	int strokeWidth = 3; // Stroke width
+	int strokeWidth = 30; // Stroke width
 
 	// Draw the filled background
-	HBRUSH hBackground = CreateSolidBrush(0xFFFFFF);
-	FillRect(hdc, &ps.rcPaint, hBackground);
-	DeleteObject(hBackground);
+//	HBRUSH hBackground = CreateSolidBrush(0xFFFFFF);
+//	FillRect(hdc, &ps.rcPaint, hBackground);
+//	DeleteObject(hBackground);
 
 	// Draw the rectangle border
 	HPEN myPen = CreatePen(PS_SOLID | PS_ENDCAP_FLAT | PS_GEOMETRIC,
 			strokeWidth, 0);
 	HGDIOBJ hOldPen = SelectObject(hdc, myPen);
 
-	Rectangle(hdc, x, y, x + 75, y + 90);
+//	Rectangle(hdc, x, y, x + 75, y + 90);
 	MoveToEx(hdc, x + 10 + strokeWidth, y + 10, nullptr);
-	LineTo(hdc, x + 65 - strokeWidth, y + 10);
+	LineTo(hdc, x + 650 - strokeWidth, y + 10);
 
 	// Clean up GDI objects
 	SelectObject(hdc, hOldPen);
