@@ -2,25 +2,51 @@
 #include <windows.h>
 #include <wingdi.h>
 
+namespace {
+
+// Used for drawing lines in the note icon.
+class LineDrawer {
+	const HDC &hdc;
+public:
+	int x, y;
+
+	LineDrawer(const HDC &hdc, int initialX, int initialY) :
+			hdc(hdc), x(initialX), y(initialY) {
+	}
+
+	void draw(int yshift) {
+		Rectangle(hdc, x, y + yshift, x + 56, y + 1 + yshift);
+	}
+};
+
+}  // namespace
+
 void drawNote(const HDC &hdc, const int x, const int y) {
 	PAINTSTRUCT ps;
 
 	// Set the border color, background color, and stroke width
-	int strokeWidth = 30; // Stroke width
+	int strokeWidth = 3; // Stroke width
 
 	// Draw the filled background
-//	HBRUSH hBackground = CreateSolidBrush(0xFFFFFF);
-//	FillRect(hdc, &ps.rcPaint, hBackground);
-//	DeleteObject(hBackground);
+	HBRUSH hBackground = CreateSolidBrush(0xFFFFFF);
+	FillRect(hdc, &ps.rcPaint, hBackground);
+	DeleteObject(hBackground);
 
 	// Draw the rectangle border
-	HPEN myPen = CreatePen(PS_SOLID | PS_ENDCAP_FLAT | PS_GEOMETRIC,
+	HPEN myPen = CreatePen(PS_ENDCAP_FLAT | PS_JOIN_MITER | PS_GEOMETRIC,
 			strokeWidth, 0);
 	HGDIOBJ hOldPen = SelectObject(hdc, myPen);
 
-//	Rectangle(hdc, x, y, x + 75, y + 90);
-	MoveToEx(hdc, x + 10 + strokeWidth, y + 10, nullptr);
-	LineTo(hdc, x + 650 - strokeWidth, y + 10);
+	Rectangle(hdc, x, y, x + 75, y + 90);
+
+	int topShift = 15;
+	LineDrawer drawer(hdc, x + 10, y + topShift);
+	drawer.draw(0);
+	drawer.draw(10);
+	drawer.draw(30);
+	drawer.draw(40);
+	drawer.draw(50);
+	drawer.draw(60);
 
 	// Clean up GDI objects
 	SelectObject(hdc, hOldPen);
