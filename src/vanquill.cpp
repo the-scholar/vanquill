@@ -2,6 +2,26 @@
 #include <windows.h>
 #include <wingdi.h>
 
+namespace {
+
+// Used for drawing lines in the note icon.
+class LineDrawer {
+	const HDC &hdc;
+public:
+	int x, y;
+
+	LineDrawer(const HDC &hdc, int initialX, int initialY) :
+			hdc(hdc), x(initialX), y(initialY) {
+	}
+
+	void draw(int yshift) {
+		MoveToEx(hdc, x, y + yshift, nullptr);
+		LineTo(hdc, x + 54, y + yshift);
+	}
+};
+
+}  // namespace
+
 void drawNote(const HDC &hdc, const int x, const int y) {
 	PAINTSTRUCT ps;
 
@@ -26,15 +46,13 @@ void drawNote(const HDC &hdc, const int x, const int y) {
 	SelectObject(hdc, linePen);
 	DeleteObject(rectPen);
 
-	int topShift = 15;
-	MoveToEx(hdc, x + 10 + strokeWidth, y + topShift, nullptr);
-	LineTo(hdc, x + 63 - strokeWidth, y + topShift);
-
-	MoveToEx(hdc, x + 10 + strokeWidth, y + topShift + 6, nullptr);
-	LineTo(hdc, x + 63 - strokeWidth, y + topShift + 6);
-
-	MoveToEx(hdc, x + 10 + strokeWidth, y + topShift + 19, nullptr);
-	LineTo(hdc, x + 63 - strokeWidth, y + topShift + 19);
+	LineDrawer drawer(hdc, x + 10, y + 14);
+	drawer.draw(0);
+	drawer.draw(10);
+	drawer.draw(30);
+	drawer.draw(40);
+	drawer.draw(50);
+	drawer.draw(60);
 
 	// Clean up GDI objects
 	SelectObject(hdc, hOldPen);
