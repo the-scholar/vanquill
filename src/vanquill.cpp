@@ -2,25 +2,6 @@
 #include <windows.h>
 #include <wingdi.h>
 
-namespace {
-
-// Used for drawing lines in the note icon.
-class LineDrawer {
-	const HDC &hdc;
-public:
-	int x, y;
-
-	LineDrawer(const HDC &hdc, int initialX, int initialY) :
-			hdc(hdc), x(initialX), y(initialY) {
-	}
-
-	void draw(int yshift) {
-		Rectangle(hdc, x, y + yshift, x + 56, y + 1 + yshift);
-	}
-};
-
-}  // namespace
-
 void drawNote(const HDC &hdc, const int x, const int y) {
 	PAINTSTRUCT ps;
 
@@ -33,24 +14,31 @@ void drawNote(const HDC &hdc, const int x, const int y) {
 	DeleteObject(hBackground);
 
 	// Draw the rectangle border
-	HPEN myPen = CreatePen(PS_ENDCAP_FLAT | PS_JOIN_MITER | PS_GEOMETRIC,
-			strokeWidth, 0);
-	HGDIOBJ hOldPen = SelectObject(hdc, myPen);
+	LOGBRUSH lb = {
+	BS_SOLID, 0 };
+	HPEN linePen = ExtCreatePen(
+	PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_FLAT | PS_JOIN_MITER, strokeWidth, &lb,
+			0, nullptr);
 
+	HPEN rectPen = CreatePen(PS_SOLID, 3, 0);
+	HGDIOBJ hOldPen = SelectObject(hdc, rectPen);
 	Rectangle(hdc, x, y, x + 75, y + 90);
+	SelectObject(hdc, linePen);
+	DeleteObject(rectPen);
 
 	int topShift = 15;
-	LineDrawer drawer(hdc, x + 10, y + topShift);
-	drawer.draw(0);
-	drawer.draw(10);
-	drawer.draw(30);
-	drawer.draw(40);
-	drawer.draw(50);
-	drawer.draw(60);
+	MoveToEx(hdc, x + 10 + strokeWidth, y + topShift, nullptr);
+	LineTo(hdc, x + 63 - strokeWidth, y + topShift);
+
+	MoveToEx(hdc, x + 10 + strokeWidth, y + topShift + 6, nullptr);
+	LineTo(hdc, x + 63 - strokeWidth, y + topShift + 6);
+
+	MoveToEx(hdc, x + 10 + strokeWidth, y + topShift + 19, nullptr);
+	LineTo(hdc, x + 63 - strokeWidth, y + topShift + 19);
 
 	// Clean up GDI objects
 	SelectObject(hdc, hOldPen);
-	DeleteObject(myPen);
+	DeleteObject(linePen);
 }
 
 POINT lastMousePos;  // Stores the last mouse position
