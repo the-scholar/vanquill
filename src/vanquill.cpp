@@ -34,17 +34,18 @@ void drawNote(const HDC &hdc, const int x, const int y) {
 	DeleteObject(hBackground);
 
 	// Draw the rectangle border
+	HPEN rectPen = CreatePen(PS_SOLID, 3, 0);
+	HGDIOBJ hOldPen = SelectObject(hdc, rectPen);
+	Rectangle(hdc, x, y, x + 75, y + 90);
+
+	// Draw the lines
 	LOGBRUSH lb = {
 	BS_SOLID, 0 };
 	HPEN linePen = ExtCreatePen(
 	PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_FLAT | PS_JOIN_MITER, strokeWidth, &lb,
 			0, nullptr);
-
-	HPEN rectPen = CreatePen(PS_SOLID, 3, 0);
-	HGDIOBJ hOldPen = SelectObject(hdc, rectPen);
-	Rectangle(hdc, x, y, x + 75, y + 90);
 	SelectObject(hdc, linePen);
-	DeleteObject(rectPen);
+	DeleteObject(rectPen); // Delete rect pen after switching to line pen.
 
 	LineDrawer drawer(hdc, x + 10, y + 14);
 	drawer.draw(0);
@@ -125,6 +126,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		Rectangle(hdc, 10 + environmentX, 10 + environmentY, 210 + environmentX,
 				35 + environmentY);
 		drawNote(hdc, 50, 50);
+		drawNote(hdc, 200, 75);
 
 		EndPaint(hwnd, &ps);
 		return 0;
