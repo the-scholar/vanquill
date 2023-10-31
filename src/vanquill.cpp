@@ -2,6 +2,8 @@
 #include <windows.h>
 #include <wingdi.h>
 
+#include "Note.h"
+
 namespace {
 
 // Used for drawing lines in the note icon.
@@ -171,6 +173,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			hInstance,
 			NULL
 	);
+
+	Note ni(0, 0, 0, 0);
+
 
 	ShowWindow(hwnd, nCmdShow);
 
