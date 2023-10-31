@@ -25,6 +25,10 @@ const WorldPosition& Note::getPos() const {
 	return pos;
 }
 
+WorldPosition& Note::getPosRef() {
+	return pos;
+}
+
 void Note::setPos(const WorldPosition &pos) {
 	this->pos = pos;
 }
@@ -56,11 +60,13 @@ void Note::draw(const HDC &hdc) const {
 	SelectObject(hdc, linePen);
 	DeleteObject(rectPen); // Delete rect pen after switching to line pen.
 
-	int screenx, screeny;
 	drawLine(hdc, screenx += 10, screeny + 14);
 	drawLine(hdc, screenx, screeny + 24);
 	drawLine(hdc, screenx, screeny + 44);
 	drawLine(hdc, screenx, screeny + 54);
 	drawLine(hdc, screenx, screeny + 64);
 	drawLine(hdc, screenx, screeny + 74);
+
+	SelectObject(hdc, hOldPen);
+	DeleteObject(linePen);
 }

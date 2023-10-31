@@ -13,6 +13,7 @@ public:
 	virtual ~Note();
 	void draw(const HDC &hdc) const;
 	const WorldPosition& getPos() const;
+	WorldPosition& getPosRef();
 	void setPos(const WorldPosition &pos);
 };
 
