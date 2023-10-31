@@ -3,23 +3,17 @@
 
 #include <windows.h>
 #include <wingdi.h>
+#include "WorldPosition.h"
 
 class Note {
-	long long chunkx, chunky;
-	float x, y;
-
+	WorldPosition pos;
 public:
 	Note(long long chunkx, long long chunky, float x, float y);
+	Note(WorldPosition pos);
 	virtual ~Note();
-	long long getChunkx() const;
-	void setChunkx(long long chunkx);
-	long long getChunky() const;
-	void setChunky(long long chunky);
-	float getX() const;
-	void setX(float x);
-	float getY() const;
-	void setY(float y);
 	void draw(const HDC &hdc) const;
+	const WorldPosition& getPos() const;
+	void setPos(const WorldPosition &pos);
 };
 
 #endif /* NOTE_H_ */

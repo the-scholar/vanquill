@@ -10,48 +10,31 @@ inline void drawLine(const HDC &hdc, int x, int y) {
 }
 }
 
-long long Note::getChunkx() const {
-	return chunkx;
-}
-
-void Note::setChunkx(long long chunkx) {
-	this->chunkx = chunkx;
-}
-
-long long Note::getChunky() const {
-	return chunky;
-}
-
-void Note::setChunky(long long chunky) {
-	this->chunky = chunky;
-}
-
-float Note::getX() const {
-	return x;
-}
-
-void Note::setX(float x) {
-	this->x = x;
-}
-
-float Note::getY() const {
-	return y;
-}
-
 Note::~Note() {
 }
 
 Note::Note(long long chunkx, long long chunky, float x, float y) :
-		chunkx(chunkx), chunky(chunky), x(x), y(y) {
+		Note(WorldPosition(chunkx, chunky, x, y)) {
 }
 
-void Note::setY(float y) {
-	this->y = y;
+Note::Note(WorldPosition pos) :
+		pos(pos) {
+}
+
+const WorldPosition& Note::getPos() const {
+	return pos;
+}
+
+void Note::setPos(const WorldPosition &pos) {
+	this->pos = pos;
 }
 
 void Note::draw(const HDC &hdc) const {
 
 	// TODO Check to make sure note is in viewport
+
+	// TODO Set calculate screen position:
+	int screenx, screeny;
 
 	// Draw the filled background
 	HBRUSH hBackground = CreateSolidBrush(0xFFFFFF);
@@ -62,7 +45,7 @@ void Note::draw(const HDC &hdc) const {
 	// Draw the rectangle border
 	HPEN rectPen = CreatePen(PS_SOLID, 3, 0);
 	HGDIOBJ hOldPen = SelectObject(hdc, rectPen);
-	Rectangle(hdc, x, y, x + 75, y + 90);
+	Rectangle(hdc, screenx, screeny, screenx + 75, screeny + 90);
 
 	// Draw lines
 	LOGBRUSH lb = {
@@ -74,11 +57,10 @@ void Note::draw(const HDC &hdc) const {
 	DeleteObject(rectPen); // Delete rect pen after switching to line pen.
 
 	int screenx, screeny;
-	LineDrawer drawer(hdc, x + 10, y + 14);
-	drawer.draw(0);
-	drawer.draw(10);
-	drawer.draw(30);
-	drawer.draw(40);
-	drawer.draw(50);
-	drawer.draw(60);
+	drawLine(hdc, screenx += 10, screeny + 14);
+	drawLine(hdc, screenx, screeny + 24);
+	drawLine(hdc, screenx, screeny + 44);
+	drawLine(hdc, screenx, screeny + 54);
+	drawLine(hdc, screenx, screeny + 64);
+	drawLine(hdc, screenx, screeny + 74);
 }
