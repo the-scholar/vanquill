@@ -3,8 +3,8 @@
 
 class WorldPosition {
 public:
-	long long chunkx, chunky;
-	float x, y;
+	const long long chunkx, chunky;
+	const float x, y;
 	WorldPosition();
 	WorldPosition(long long, long long, float, float);
 	WorldPosition move(long long, long long, float, float);
