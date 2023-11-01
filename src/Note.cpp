@@ -33,12 +33,9 @@ void Note::setPos(const WorldPosition &pos) {
 	this->pos = pos;
 }
 
-void Note::draw(const HDC &hdc) const {
+void Note::draw(const HDC &hdc, int screenx, int screeny) const {
 
 	// TODO Check to make sure note is in viewport
-
-	// TODO Set calculate screen position:
-	int screenx, screeny;
 
 	// Draw the filled background
 	HBRUSH hBackground = CreateSolidBrush(0xFFFFFF);

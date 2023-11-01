@@ -8,13 +8,13 @@
 class Note {
 	WorldPosition pos;
 public:
-	Note(long long chunkx, long long chunky, float x, float y);
-	Note(WorldPosition pos);
+	Note(long long, long long, float, float);
+	Note(WorldPosition);
 	virtual ~Note();
-	void draw(const HDC &hdc) const;
+	void draw(const HDC&, int, int) const;
 	const WorldPosition& getPos() const;
 	WorldPosition& getPosRef();
-	void setPos(const WorldPosition &pos);
+	void setPos(const WorldPosition &);
 };
 
 #endif /* NOTE_H_ */
