@@ -139,13 +139,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
 		RECT rect;
 		GetClientRect(hwnd, &rect);
-		auto width = rect.right - rect.left, height = rect.bottom - rect.top;
+		auto &width = rect.right, &height = rect.bottom;
 		auto centerX = width / 2, centerY = height / 2;
 
-		if (rectIntersect<float>(rect.top + viewportY, rect.left + viewportX,
-				rect.right + viewportX, rect.bottom + viewportY,
-				centerY + noteY, centerX + noteX, centerX + noteX + 81,
-				centerY + noteY + 96))
+		if (rectIntersect<float>(viewportY, viewportX, width + viewportX,
+				height + viewportY, centerY + noteY, centerX + noteX,
+				centerX + noteX + 81, centerY + noteY + 96))
 			drawNote(backBufferDC, centerX + noteX - viewportX,
 					centerY + noteY - viewportY);
 		else
