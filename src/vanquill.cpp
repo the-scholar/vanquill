@@ -11,6 +11,8 @@ std::chrono::steady_clock::time_point startTime;
 int frameCount = 0;
 int currentFPS = 0;
 
+
+
 void UpdateFPS(HWND hwnd) {
 	frameCount++;
 
@@ -196,7 +198,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			hInstance,
 			NULL
 	);
-
 	// Create a text input control
 	CreateWindow(
 			"EDIT",
@@ -208,7 +209,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			hInstance,
 			NULL
 	);
-
 	// Check if V-Sync is supported
 	BOOL vsyncSupported = SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0,
 			NULL, 0);
@@ -217,7 +217,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		// V-Sync is supported, attempt to enable it
 		BOOL result = SystemParametersInfo(SPI_SETFONTSMOOTHINGTYPE, 1, NULL,
 				0);
-
 		if (result) {
 			// V-Sync enabled successfully
 		} else {
@@ -232,7 +231,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 				<< "V-Sync is not supported on this system. Your application will run without V-Sync."
 				<< std::endl;
 	}
-
 	startTime = std::chrono::steady_clock::now();
 
 	ShowWindow(hwnd, nCmdShow);
