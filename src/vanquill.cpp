@@ -12,7 +12,15 @@ inline void drawLine(const HDC &hdc, int x, int y) {
 	LineTo(hdc, x + 54, y);
 }
 
+template<typename T>
+inline bool rectIntersect(const T &top1, const T &left1, const T &right1,
+		const T &bottom1, const T &top2, const T &left2, const T &right2,
+		const T &bottom2) {
+	return left1 < right2 && right1 > left2 && top1 < bottom2 && bottom1 > top2;
+}
+
 // Used for drawing lines in the note icon.
+// Note icon is 75x90
 void drawNote(const HDC &hdc, int screenx, int screeny) {
 	// TODO Check to make sure note is in viewport
 
@@ -119,7 +127,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		auto width = rect.right - rect.left, height = rect.bottom - rect.top;
 		auto centerX = width / 2, centerY = height / 2;
 
-		drawNote(hdc, centerX + noteX - viewportX, centerY + noteY - viewportY);
+		if (rectIntersect<float>(rect.top, rect.left, rect.right, rect.bottom,
+				centerY + noteY - viewportY, centerX + noteX - viewportX,
+				centerX + noteX - viewportX + 75,
+				centerY + noteY - viewportY + 90))
+			drawNote(hdc, centerX + noteX - viewportX,
+					centerY + noteY - viewportY);
+		else
+			std::cout << "Out of bounds" << std::endl;
 
 		EndPaint(hwnd, &ps);
 		return 0;
