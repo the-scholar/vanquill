@@ -2,7 +2,10 @@
 
 WorldPosition::WorldPosition() :
 		WorldPosition(0, 0, 0, 0) {
+}
 
+WorldPosition::WorldPosition(const WorldPosition &pos) :
+		chunkx(pos.chunkx), chunky(pos.chunky), x(pos.x), y(pos.y) {
 }
 
 WorldPosition::~WorldPosition() {

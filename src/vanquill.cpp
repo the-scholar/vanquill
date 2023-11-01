@@ -6,61 +6,56 @@
 
 namespace {
 
+/*
+ * Draws a 54-px width, horizontal line (from right to left) at x, y
+ */
+inline void drawLine(const HDC &hdc, int x, int y) {
+	MoveToEx(hdc, x, y, nullptr);
+	LineTo(hdc, x + 54, y);
+}
+
 // Used for drawing lines in the note icon.
-class LineDrawer {
-	const HDC &hdc;
-public:
-	int x, y;
-
-	LineDrawer(const HDC &hdc, int initialX, int initialY) :
-			hdc(hdc), x(initialX), y(initialY) {
-	}
-
-	void draw(int yshift) {
-		MoveToEx(hdc, x, y + yshift, nullptr);
-		LineTo(hdc, x + 54, y + yshift);
-	}
-};
-
-}  // namespace
-
-void drawNote(const HDC &hdc, const int x, const int y) {
-	PAINTSTRUCT ps;
-
-	// Set the border color, background color, and stroke width
-	int strokeWidth = 3; // Stroke width
+void drawNote(const HDC &hdc, int screenx, int screeny) {
+	// TODO Check to make sure note is in viewport
 
 	// Draw the filled background
 	HBRUSH hBackground = CreateSolidBrush(0xFFFFFF);
+	PAINTSTRUCT ps;
 	FillRect(hdc, &ps.rcPaint, hBackground);
 	DeleteObject(hBackground);
 
 	// Draw the rectangle border
 	HPEN rectPen = CreatePen(PS_SOLID, 3, 0);
 	HGDIOBJ hOldPen = SelectObject(hdc, rectPen);
-	Rectangle(hdc, x, y, x + 75, y + 90);
+	Rectangle(hdc, screenx, screeny, screenx + 75, screeny + 90);
 
-	// Draw the lines
+	// Draw lines
 	LOGBRUSH lb = {
 	BS_SOLID, 0 };
 	HPEN linePen = ExtCreatePen(
-	PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_FLAT | PS_JOIN_MITER, strokeWidth, &lb,
-			0, nullptr);
+	PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_FLAT | PS_JOIN_MITER, 3, &lb, 0,
+			nullptr);
 	SelectObject(hdc, linePen);
 	DeleteObject(rectPen); // Delete rect pen after switching to line pen.
 
-	LineDrawer drawer(hdc, x + 10, y + 14);
-	drawer.draw(0);
-	drawer.draw(10);
-	drawer.draw(30);
-	drawer.draw(40);
-	drawer.draw(50);
-	drawer.draw(60);
+	drawLine(hdc, screenx += 10, screeny + 14);
+	drawLine(hdc, screenx, screeny + 24);
+	drawLine(hdc, screenx, screeny + 44);
+	drawLine(hdc, screenx, screeny + 54);
+	drawLine(hdc, screenx, screeny + 64);
+	drawLine(hdc, screenx, screeny + 74);
 
-	// Clean up GDI objects
 	SelectObject(hdc, hOldPen);
 	DeleteObject(linePen);
 }
+
+}  // namespace
+
+long long screenChunkx, screenChunky;
+float screenX, screenY;
+
+long long noteChunkx, noteChunky;
+float noteX, noteY;
 
 POINT lastMousePos;  // Stores the last mouse position
 BOOL isPanning = FALSE;  // Indicates whether panning is active
@@ -127,8 +122,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		// For demonstration purposes, let's draw a rectangle at the updated position
 		Rectangle(hdc, 10 + environmentX, 10 + environmentY, 210 + environmentX,
 				35 + environmentY);
-		drawNote(hdc, 50, 50);
-		drawNote(hdc, 200, 75);
+		note.draw(hdc, 30, 30);
 
 		EndPaint(hwnd, &ps);
 		return 0;
@@ -175,7 +169,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	);
 
 	Note ni(0, 0, 0, 0);
-
 
 	ShowWindow(hwnd, nCmdShow);
 

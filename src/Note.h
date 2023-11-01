@@ -9,7 +9,7 @@ class Note {
 	WorldPosition pos;
 public:
 	Note(long long, long long, float, float);
-	Note(WorldPosition);
+	Note(const WorldPosition&);
 	Note();
 	virtual ~Note();
 	void draw(const HDC&, int, int) const;

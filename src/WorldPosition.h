@@ -7,6 +7,7 @@ public:
 	const float x, y;
 	WorldPosition();
 	WorldPosition(long long, long long, float, float);
+	WorldPosition(const WorldPosition&);
 	WorldPosition move(long long, long long, float, float);
 	WorldPosition move(long long, long long);
 	WorldPosition move(float, float);
