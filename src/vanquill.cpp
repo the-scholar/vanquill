@@ -90,8 +90,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		if (isPanning) {
 			int deltaX = LOWORD(lParam) - lastMousePos.x;
 			int deltaY = HIWORD(lParam) - lastMousePos.y;
-			environmentX += deltaX;
-			environmentY += deltaY;
+			viewportX -= deltaX;
+			viewportY -= deltaY;
 			lastMousePos.x = LOWORD(lParam);
 			lastMousePos.y = HIWORD(lParam);
 
