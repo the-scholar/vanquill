@@ -3,7 +3,8 @@
 #include <wingdi.h>
 
 namespace {
-
+HDC backBufferDC = nullptr;
+HBITMAP backBufferBitmap = nullptr;
 /*
  * Draws a 54-px width, horizontal line (from right to left) at x, y
  */
@@ -11,7 +12,6 @@ inline void drawLine(const HDC &hdc, int x, int y) {
 	MoveToEx(hdc, x, y, nullptr);
 	LineTo(hdc, x + 54, y);
 }
-
 // Used for drawing lines in the note icon.
 void drawNote(const HDC &hdc, int screenx, int screeny) {
 	// TODO Check to make sure note is in viewport
@@ -46,9 +46,7 @@ void drawNote(const HDC &hdc, int screenx, int screeny) {
 	SelectObject(hdc, hOldPen);
 	DeleteObject(linePen);
 }
-
 }  // namespace
-
 float viewportX, viewportY;
 float noteX, noteY;
 
@@ -60,18 +58,10 @@ int environmentY = 0;  // Y-coordinate of the environment's top-left corner
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	switch (msg) {
 	case WM_ERASEBKGND: {
-		HDC hdc = (HDC) wParam;
-		RECT rect;
-		GetClientRect(hwnd, &rect);
-
-		HBRUSH hBrush = CreateSolidBrush(0xE5F5FF);
-		FillRect(hdc, &rect, hBrush);
-
-		DeleteObject(hBrush);
+//		HDC hdc = (HDC) wParam;
 
 		return 1;
 	}
-
 	case WM_COMMAND:
 		break;
 
@@ -107,31 +97,56 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		}
 		return 0;
 
+	case WM_SIZE: {
+		PAINTSTRUCT ps;
+		HDC hdc = BeginPaint(hwnd, &ps);
+
+		RECT clientRect;
+		GetClientRect(hwnd, &clientRect);
+
+		if (backBufferDC)
+			DeleteDC(backBufferDC);
+		if (backBufferBitmap)
+			DeleteObject(backBufferBitmap);
+
+		backBufferDC = CreateCompatibleDC(hdc);
+		backBufferBitmap = CreateCompatibleBitmap(hdc, clientRect.right,
+				clientRect.bottom);
+
+		SelectObject(backBufferDC, backBufferBitmap);
+
+		break;
+	}
 	case WM_PAINT: {
 		PAINTSTRUCT ps;
 		HDC hdc = BeginPaint(hwnd, &ps);
 
-		// Perform your drawing here based on environmentX and environmentY
-		// You need to redraw the canvas or environment at the updated position
+		RECT clientRect;
+		GetClientRect(hwnd, &clientRect);
+
+		HBRUSH hBackground = CreateSolidBrush(0xE5F5FF);
+		FillRect(backBufferDC, &clientRect, hBackground);
+		DeleteObject(hBackground);
 
 		RECT rect;
 		GetClientRect(hwnd, &rect);
 		auto width = rect.right - rect.left, height = rect.bottom - rect.top;
 		auto centerX = width / 2, centerY = height / 2;
 
-		drawNote(hdc, centerX + noteX - viewportX, centerY + noteY - viewportY);
+		drawNote(backBufferDC, centerX + noteX - viewportX,
+				centerY + noteY - viewportY);
+
+		BitBlt(hdc, 0, 0, clientRect.right, clientRect.bottom, backBufferDC, 0,
+				0, SRCCOPY);
 
 		EndPaint(hwnd, &ps);
 		return 0;
 	}
-
 	default:
 		return DefWindowProc(hwnd, msg, wParam, lParam);
 	}
-
 	return 0;
 }
-
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		LPSTR lpCmdLine, int nCmdShow) {
 	const char *className = "TextInputWindowClass";
@@ -152,7 +167,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			hInstance,
 			NULL
 	);
-
 	// Create a text input control
 	CreateWindow(
 			"EDIT",
@@ -164,7 +178,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			hInstance,
 			NULL
 	);
-
 	ShowWindow(hwnd, nCmdShow);
 
 	MSG msg = { };
@@ -172,6 +185,5 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
-
 	return 0;
 }
