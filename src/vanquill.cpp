@@ -21,7 +21,7 @@ inline bool rectIntersect(const T &top1, const T &left1, const T &right1,
 }
 
 // Used for drawing lines in the note icon.
-// Note icon is 75x90
+// Note icon is 81x96
 void drawNote(const HDC &hdc, int screenx, int screeny) {
 	// TODO Check to make sure note is in viewport
 
@@ -142,10 +142,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		auto width = rect.right - rect.left, height = rect.bottom - rect.top;
 		auto centerX = width / 2, centerY = height / 2;
 
-		if (rectIntersect<float>(rect.top, rect.left, rect.right, rect.bottom,
-				centerY + noteY - viewportY, centerX + noteX - viewportX,
-				centerX + noteX - viewportX + 75,
-				centerY + noteY - viewportY + 90))
+		if (rectIntersect<float>(rect.top + viewportY, rect.left + viewportX,
+				rect.right + viewportX, rect.bottom + viewportY,
+				centerY + noteY, centerX + noteX, centerX + noteX + 81,
+				centerY + noteY + 96))
 			drawNote(backBufferDC, centerX + noteX - viewportX,
 					centerY + noteY - viewportY);
 		else
@@ -178,17 +178,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			WS_OVERLAPPEDWINDOW,
 			CW_USEDEFAULT, CW_USEDEFAULT, 400, 300,
 			NULL,
-			NULL,
-			hInstance,
-			NULL
-	);
-	// Create a text input control
-	CreateWindow(
-			"EDIT",
-			"",
-			WS_CHILD | WS_VISIBLE | WS_BORDER | ES_LEFT | ES_AUTOHSCROLL,
-			10, 10, 200, 25,
-			hwnd,
 			NULL,
 			hInstance,
 			NULL
