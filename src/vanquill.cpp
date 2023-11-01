@@ -49,10 +49,7 @@ void drawNote(const HDC &hdc, int screenx, int screeny) {
 
 }  // namespace
 
-long long screenChunkx, screenChunky;
 float screenX, screenY;
-
-long long noteChunkx, noteChunky;
 float noteX, noteY;
 
 POINT lastMousePos;  // Stores the last mouse position
@@ -123,7 +120,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		auto centerX = width/2, centerY = height/2;
 
 
-		drawNote(hdc, centerX, centerY);
+		drawNote(hdc, centerX + noteX, centerY + noteY);
 
 		EndPaint(hwnd, &ps);
 		return 0;
