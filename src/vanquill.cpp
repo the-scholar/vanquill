@@ -2,8 +2,6 @@
 #include <windows.h>
 #include <wingdi.h>
 
-#include "Note.h"
-
 namespace {
 
 /*
@@ -119,10 +117,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		// Perform your drawing here based on environmentX and environmentY
 		// You need to redraw the canvas or environment at the updated position
 
-		// For demonstration purposes, let's draw a rectangle at the updated position
-		Rectangle(hdc, 10 + environmentX, 10 + environmentY, 210 + environmentX,
-				35 + environmentY);
-		note.draw(hdc, 30, 30);
+		RECT rect;
+		GetClientRect(hwnd, &rect);
+		auto width = rect.right - rect.left, height = rect.bottom - rect.top;
+		auto centerX = width/2, centerY = height/2;
+
+
+		drawNote(hdc, centerX, centerY);
 
 		EndPaint(hwnd, &ps);
 		return 0;
@@ -167,8 +168,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			hInstance,
 			NULL
 	);
-
-	Note ni(0, 0, 0, 0);
 
 	ShowWindow(hwnd, nCmdShow);
 
