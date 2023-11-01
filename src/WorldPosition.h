@@ -6,7 +6,7 @@ public:
 	long long chunkx, chunky;
 	float x, y;
 	WorldPosition();
-	WorldPosition(long long, long long, float x, float y);
+	WorldPosition(long long, long long, float, float);
 	WorldPosition move(long long, long long, float, float);
 	WorldPosition move(long long, long long);
 	WorldPosition move(float, float);
