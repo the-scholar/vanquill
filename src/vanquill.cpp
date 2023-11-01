@@ -27,7 +27,7 @@ void UpdateFPS(HWND hwnd) {
 
 		// Update the window title with FPS information
 		std::wstring title = L"Your Window Title - FPS: "
-				+ std::to_wstring(currentFPS*1000/30);
+				+ std::to_wstring(currentFPS * 1000 / 30);
 		SetWindowTextW(hwnd, title.c_str());
 	}
 }
@@ -196,6 +196,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			hInstance,
 			NULL
 	);
+
 	// Create a text input control
 	CreateWindow(
 			"EDIT",
@@ -208,6 +209,30 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			NULL
 	);
 
+	// Check if V-Sync is supported
+	BOOL vsyncSupported = SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0,
+			NULL, 0);
+
+	if (vsyncSupported) {
+		// V-Sync is supported, attempt to enable it
+		BOOL result = SystemParametersInfo(SPI_SETFONTSMOOTHINGTYPE, 1, NULL,
+				0);
+
+		if (result) {
+			// V-Sync enabled successfully
+		} else {
+			// V-Sync couldn't be enabled
+			std::cerr
+					<< "V-Sync couldn't be enabled. Your application will run without V-Sync."
+					<< std::endl;
+		}
+	} else {
+		// V-Sync is not supported
+		std::cerr
+				<< "V-Sync is not supported on this system. Your application will run without V-Sync."
+				<< std::endl;
+	}
+
 	startTime = std::chrono::steady_clock::now();
 
 	ShowWindow(hwnd, nCmdShow);
@@ -217,5 +242,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
+
 	return 0;
 }
