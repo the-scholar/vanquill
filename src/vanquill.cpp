@@ -3,6 +3,8 @@
 #include <wingdi.h>
 
 namespace {
+HDC backBufferDC = nullptr;
+HBITMAP backBufferBitmap = nullptr;
 
 /*
  * Draws a 54-px width, horizontal line (from right to left) at x, y
@@ -60,14 +62,7 @@ int environmentY = 0;  // Y-coordinate of the environment's top-left corner
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	switch (msg) {
 	case WM_ERASEBKGND: {
-		HDC hdc = (HDC) wParam;
-		RECT rect;
-		GetClientRect(hwnd, &rect);
-
-		HBRUSH hBrush = CreateSolidBrush(0xE5F5FF);
-		FillRect(hdc, &rect, hBrush);
-
-		DeleteObject(hBrush);
+//		HDC hdc = (HDC) wParam;
 
 		return 1;
 	}
@@ -111,15 +106,42 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		PAINTSTRUCT ps;
 		HDC hdc = BeginPaint(hwnd, &ps);
 
-		// Perform your drawing here based on environmentX and environmentY
-		// You need to redraw the canvas or environment at the updated position
+		// Create an off-screen buffer if it doesn't exist or if the window size changes.
+		RECT clientRect;
+		GetClientRect(hwnd, &clientRect);
+		if (!backBufferDC
+				|| clientRect.right != GetDeviceCaps(backBufferDC, HORZRES)
+				|| clientRect.bottom != GetDeviceCaps(backBufferDC, VERTRES)) {
+			if (backBufferDC)
+				DeleteDC(backBufferDC);
+			if (backBufferBitmap)
+				DeleteObject(backBufferBitmap);
 
+			backBufferDC = CreateCompatibleDC(hdc);
+			backBufferBitmap = CreateCompatibleBitmap(hdc, clientRect.right,
+					clientRect.bottom);
+			SelectObject(backBufferDC, backBufferBitmap);
+		}
+
+		// Clear the off-screen buffer
+		HBRUSH hBackground = CreateSolidBrush(0xE5F5FF);
+		FillRect(backBufferDC, &clientRect, hBackground);
+		DeleteObject(hBackground);
+
+		// Perform your drawing onto the off-screen buffer here
+		// Adjust the drawing positions based on the viewport (viewportX, viewportY)
 		RECT rect;
 		GetClientRect(hwnd, &rect);
 		auto width = rect.right - rect.left, height = rect.bottom - rect.top;
 		auto centerX = width / 2, centerY = height / 2;
 
-		drawNote(hdc, centerX + noteX - viewportX, centerY + noteY - viewportY);
+		// Draw the note icon, taking into account the viewport
+		drawNote(backBufferDC, centerX + noteX - viewportX,
+				centerY + noteY - viewportY);
+
+		// Copy the off-screen buffer to the visible screen
+		BitBlt(hdc, 0, 0, clientRect.right, clientRect.bottom, backBufferDC, 0,
+				0, SRCCOPY);
 
 		EndPaint(hwnd, &ps);
 		return 0;
