@@ -1,10 +1,39 @@
 #include <iostream>
 #include <windows.h>
 #include <wingdi.h>
+#include <chrono>
 
 namespace {
 HDC backBufferDC = nullptr;
 HBITMAP backBufferBitmap = nullptr;
+
+std::chrono::steady_clock::time_point startTime;
+int frameCount = 0;
+int currentFPS = 0;
+
+
+
+void UpdateFPS(HWND hwnd) {
+	frameCount++;
+
+	// Calculate elapsed time since the start
+	auto currentTime = std::chrono::steady_clock::now();
+	auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(
+			currentTime - startTime).count();
+
+	// Recalculate FPS every second
+	if (elapsedTime >= 30) {
+		currentFPS = frameCount;
+		frameCount = 0;
+		startTime = currentTime;
+
+		// Update the window title with FPS information
+		std::wstring title = L"Your Window Title - FPS: "
+				+ std::to_wstring(currentFPS * 1000 / 30);
+		SetWindowTextW(hwnd, title.c_str());
+	}
+}
+
 /*
  * Draws a 54-px width, horizontal line (from right to left) at x, y
  */
@@ -154,6 +183,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		BitBlt(hdc, 0, 0, clientRect.right, clientRect.bottom, backBufferDC, 0,
 				0, SRCCOPY);
 
+		UpdateFPS(hwnd);
+
 		EndPaint(hwnd, &ps);
 		return 0;
 	}
@@ -193,6 +224,30 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			hInstance,
 			NULL
 	);
+	// Check if V-Sync is supported
+	BOOL vsyncSupported = SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0,
+			NULL, 0);
+
+	if (vsyncSupported) {
+		// V-Sync is supported, attempt to enable it
+		BOOL result = SystemParametersInfo(SPI_SETFONTSMOOTHINGTYPE, 1, NULL,
+				0);
+		if (result) {
+			// V-Sync enabled successfully
+		} else {
+			// V-Sync couldn't be enabled
+			std::cerr
+					<< "V-Sync couldn't be enabled. Your application will run without V-Sync."
+					<< std::endl;
+		}
+	} else {
+		// V-Sync is not supported
+		std::cerr
+				<< "V-Sync is not supported on this system. Your application will run without V-Sync."
+				<< std::endl;
+	}
+	startTime = std::chrono::steady_clock::now();
+
 	ShowWindow(hwnd, nCmdShow);
 
 	MSG msg = { };
@@ -200,5 +255,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
+
 	return 0;
 }
