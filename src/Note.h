@@ -10,6 +10,7 @@ class Note {
 public:
 	Note(long long, long long, float, float);
 	Note(WorldPosition);
+	Note();
 	virtual ~Note();
 	void draw(const HDC&, int, int) const;
 	const WorldPosition& getPos() const;

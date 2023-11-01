@@ -29,6 +29,9 @@ WorldPosition& Note::getPosRef() {
 	return pos;
 }
 
+Note::Note() : Note(WorldPosition()) {
+}
+
 void Note::setPos(const WorldPosition &pos) {
 	this->pos = pos;
 }
