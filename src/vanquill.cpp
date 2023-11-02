@@ -11,8 +11,6 @@ std::chrono::steady_clock::time_point startTime;
 int frameCount = 0;
 int currentFPS = 0;
 
-
-
 void UpdateFPS(HWND hwnd) {
 	frameCount++;
 
@@ -32,6 +30,11 @@ void UpdateFPS(HWND hwnd) {
 				+ std::to_wstring(currentFPS * 1000 / 30);
 		SetWindowTextW(hwnd, title.c_str());
 	}
+}
+
+void printRect(const RECT &rect) {
+	std::cout << "T: " << rect.top << ", L: " << rect.left << ", R: "
+			<< rect.right << ", B: " << rect.bottom << std::endl;
 }
 
 /*
@@ -171,9 +174,20 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		auto &width = rect.right, &height = rect.bottom;
 		auto centerX = width / 2, centerY = height / 2;
 
-		if (rectIntersect<float>(viewportY, viewportX, width + viewportX,
-				height + viewportY, centerY + noteY, centerX + noteX,
-				centerX + noteX + 81, centerY + noteY + 96))
+		RECT vpr = { (float) viewportX, (float) viewportY, (float) (width
+				+ viewportX), (float) (height + viewportY) };
+		RECT notebounds = { (float) (centerX + noteX),
+				(float) (centerY + noteY), (float) (centerX + noteX + 81),
+				(float) (centerY + noteY + 96) };
+
+		std::cout << "\nViewport: ";
+		printRect(vpr);
+		std::cout << "Note: ";
+		printRect(notebounds);
+
+		if (rectIntersect<float>(vpr.top, vpr.left, vpr.right, vpr.bottom,
+				notebounds.top, notebounds.left, notebounds.right,
+				notebounds.bottom))
 			drawNote(backBufferDC, centerX + noteX - viewportX,
 					centerY + noteY - viewportY);
 		else
@@ -214,7 +228,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	);
 	// Check if V-Sync is supported
 	BOOL vsyncSupported = SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0,
-			NULL, 0);
+	NULL, 0);
 
 	if (vsyncSupported) {
 		// V-Sync is supported, attempt to enable it
