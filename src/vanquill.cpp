@@ -11,8 +11,6 @@ std::chrono::steady_clock::time_point startTime;
 int frameCount = 0;
 int currentFPS = 0;
 
-
-
 void UpdateFPS(HWND hwnd) {
 	frameCount++;
 
@@ -214,7 +212,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	);
 	// Check if V-Sync is supported
 	BOOL vsyncSupported = SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0,
-			NULL, 0);
+	NULL, 0);
 
 	if (vsyncSupported) {
 		// V-Sync is supported, attempt to enable it
