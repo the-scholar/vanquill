@@ -67,7 +67,7 @@ inline bool rectIntersect(Rect<T> first, Rect<T> second) {
 }
 
 // Used for drawing lines in the note icon.
-// Note icon is 81x96
+// Note icon is 76x96
 void drawNote(const HDC &hdc, int screenx, int screeny) {
 	// TODO Check to make sure note is in viewport
 
@@ -188,17 +188,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		auto centerX = width / 2, centerY = height / 2;
 
 		// TODO Use same coords
-		Rect viewportBounds = { 0, 0, rect.bottom, rect.left };
-		Rect noteBounds = { centerY + noteY, centerX + noteX, centerY + noteY
-				+ 81, centerX + noteX + 96 };
+		Rect<long> viewportBounds = { viewportY, width + viewportX, height
+				+ viewportY, viewportX };
+		Rect<long> noteBounds = { noteY, noteX + 76, noteY + 96, noteX };
 
 		std::cout << "\nViewport: ";
 		printRect(viewportBounds);
 		std::cout << "Note: ";
 		printRect(noteBounds);
 
-		drawNote(backBufferDC, centerX + noteX - viewportX,
-				centerY + noteY - viewportY);
+		drawNote(backBufferDC, noteX - viewportX, noteY - viewportY);
 		if (rectIntersect(viewportBounds, noteBounds))
 			std::cout << "In bounds" << std::endl;
 		else
