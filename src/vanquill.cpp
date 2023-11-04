@@ -1,7 +1,13 @@
-#include <iostream>
-#include <windows.h>
+#include <minwindef.h>
+#include <windef.h>
 #include <wingdi.h>
+#include <winnt.h>
+#include <winuser.h>
 #include <chrono>
+#include <iostream>
+#include <string>
+
+#include "customWindowFrame.hpp"
 
 namespace {
 HDC backBufferDC = nullptr;
@@ -168,6 +174,30 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		break;
 	}
 
+		/*
+		 * Handles custom window frame painting in order to customise the way the window
+		 * border looks, as well as to add extra functionality to the window borders
+		 * such as tabs for open files, access to menus and other items from the window
+		 * frame, as well as custom colors and themeing.
+		 *
+		 * 'WM_NCPAINT' message is sent when the non-client area of the window needs to
+		 * be painted.
+		 *
+		 */
+
+	case WM_NCPAINT: {
+
+		/*
+		 * The function 'customWindowFrame()' contains the logic required to
+		 * customise the window frame, as well as introduce future modularity
+		 * and possible themeing to the application.
+		 */
+
+		CustomWindowFrame().customWindowFrame(hwnd, wParam, lParam);
+
+		return 0;
+	}
+
 	case WM_PAINT: {
 		PAINTSTRUCT ps;
 		HDC hdc = BeginPaint(hwnd, &ps);
@@ -230,6 +260,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	WNDCLASS wc = { };
 
+	//TODO
+	wc.style = CS_HREDRAW | CS_VREDRAW;
+	wc.cbClsExtra = 0;
+	wc.cbWndExtra = 0;
+	wc.hIcon = LoadIconA(hInstance, NULL); //TODO
+	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+
 	/*
 	 * Used to specify the memory address of the window procedure.
 	 */
@@ -261,16 +298,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	 * Initialised with values our window will be created with.S
 	 */
 
-	HWND hwnd = CreateWindow(
-			className,
-			"Text Input Window",
-			WS_OVERLAPPEDWINDOW,
-			CW_USEDEFAULT, CW_USEDEFAULT, 900, 600,
-			NULL,
-			NULL,
-			hInstance,
-			NULL
-	);
+	HWND hwnd = CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, "MyWindow", "myTitle",
+	WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 600, 400, NULL,
+	NULL, hInstance, NULL);
+
+	if (!hwnd) {
+		MessageBox(NULL, "Window Creation Failed.", "Error.",
+				MB_ICONEXCLAMATION | MB_OK);
+		return 0;
+	}
 
 	/*
 	 * Begins clock that the FPS counter used to count FPS
