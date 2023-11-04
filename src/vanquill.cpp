@@ -4,6 +4,12 @@
 #include <chrono>
 
 namespace {
+
+template<typename T>
+struct Rect {
+	T top, right, bottom, left;
+};
+
 HDC backBufferDC = nullptr;
 HBITMAP backBufferBitmap = nullptr;
 
@@ -32,7 +38,8 @@ void UpdateFPS(HWND hwnd) {
 	}
 }
 
-void printRect(const RECT &rect) {
+template<typename T>
+void printRect(const T &rect) {
 	std::cout << "T: " << rect.top << ", L: " << rect.left << ", R: "
 			<< rect.right << ", B: " << rect.bottom << std::endl;
 }
@@ -46,10 +53,17 @@ inline void drawLine(const HDC &hdc, int x, int y) {
 }
 
 template<typename T>
-inline bool rectIntersect(const T &top1, const T &left1, const T &right1,
-		const T &bottom1, const T &top2, const T &left2, const T &right2,
+inline bool rectIntersect(const T &top1, const T &right1, const T &left1,
+		const T &bottom1, const T &top2, const T &right2, const T &left2,
 		const T &bottom2) {
-	return left1 < right2 && right1 > left2 && top1 < bottom2 && bottom1 > top2;
+	return left1 <= right2 && left2 <= right1 && top1 <= bottom2
+			&& top2 <= bottom1;
+}
+
+template<typename T>
+inline bool rectIntersect(Rect<T> first, Rect<T> second) {
+	return rectIntersect(first.top, first.right, first.left, first.bottom,
+			second.top, second.right, second.left, second.bottom);
 }
 
 // Used for drawing lines in the note icon.
@@ -88,8 +102,7 @@ void drawNote(const HDC &hdc, int screenx, int screeny) {
 	DeleteObject(linePen);
 }
 }  // namespace
-float viewportX, viewportY;
-float noteX, noteY;
+int viewportX, viewportY, noteX, noteY;
 
 POINT lastMousePos;  // Stores the last mouse position
 BOOL isPanning = FALSE;  // Indicates whether panning is active
@@ -174,22 +187,20 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		auto &width = rect.right, &height = rect.bottom;
 		auto centerX = width / 2, centerY = height / 2;
 
-		RECT vpr = { (float) viewportX, (float) viewportY, (float) (width
-				+ viewportX), (float) (height + viewportY) };
-		RECT notebounds = { (float) (centerX + noteX),
-				(float) (centerY + noteY), (float) (centerX + noteX + 81),
-				(float) (centerY + noteY + 96) };
+		// TODO Use same coords
+		Rect viewportBounds = { 0, 0, rect.bottom, rect.left };
+		Rect noteBounds = { centerY + noteY, centerX + noteX, centerY + noteY
+				+ 81, centerX + noteX + 96 };
 
 		std::cout << "\nViewport: ";
-		printRect(vpr);
+		printRect(viewportBounds);
 		std::cout << "Note: ";
-		printRect(notebounds);
+		printRect(noteBounds);
 
-		if (rectIntersect<float>(vpr.top, vpr.left, vpr.right, vpr.bottom,
-				notebounds.top, notebounds.left, notebounds.right,
-				notebounds.bottom))
-			drawNote(backBufferDC, centerX + noteX - viewportX,
-					centerY + noteY - viewportY);
+		drawNote(backBufferDC, centerX + noteX - viewportX,
+				centerY + noteY - viewportY);
+		if (rectIntersect(viewportBounds, noteBounds))
+			std::cout << "In bounds" << std::endl;
 		else
 			std::cout << "Out of bounds" << std::endl;
 
