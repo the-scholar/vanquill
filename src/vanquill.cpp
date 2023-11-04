@@ -8,6 +8,7 @@
 #include <string>
 
 #include "customWindowFrame.hpp"
+#include "updateFPS.hpp"
 
 namespace {
 
@@ -18,31 +19,6 @@ struct Rect {
 
 HDC backBufferDC = nullptr;
 HBITMAP backBufferBitmap = nullptr;
-
-std::chrono::steady_clock::time_point startTime;
-int frameCount = 0;
-int currentFPS = 0;
-
-void UpdateFPS(HWND hwnd) {
-	frameCount++;
-
-	// Calculate elapsed time since the start
-	auto currentTime = std::chrono::steady_clock::now();
-	auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(
-			currentTime - startTime).count();
-
-	// Recalculate FPS every second
-	if (elapsedTime >= 30) {
-		currentFPS = frameCount;
-		frameCount = 0;
-		startTime = currentTime;
-
-		// Update the window title with FPS information
-		std::wstring title = L"Your Window Title - FPS: "
-				+ std::to_wstring(currentFPS * 1000 / 30);
-		SetWindowTextW(hwnd, title.c_str());
-	}
-}
 
 template<typename T>
 void printRect(const T &rect) {
@@ -251,7 +227,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		BitBlt(hdc, 0, 0, clientRect.right, clientRect.bottom, backBufferDC, 0,
 				0, SRCCOPY);
 
-		UpdateFPS(hwnd);
+		UpdateFPS().updateFPS(hwnd);
 
 		EndPaint(hwnd, &ps);
 		return 0;
@@ -349,12 +325,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 				<< "V-Sync is not supported on this system. Your application will run without V-Sync."
 				<< std::endl;
 	}
-  
-  
-	/*
-	 * Begins clock that the FPS counter used to count FPS
-	 */
-	startTime = std::chrono::steady_clock::now();
 
 	/*
 	 * Displays the window using values specified in 'hwnd' and the WinMain function.
