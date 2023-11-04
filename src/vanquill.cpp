@@ -109,13 +109,27 @@ BOOL isPanning = FALSE;  // Indicates whether panning is active
 int environmentX = 0;  // X-coordinate of the environment's top-left corner
 int environmentY = 0;  // Y-coordinate of the environment's top-left corner
 
-LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-	switch (msg) {
-	case WM_ERASEBKGND: {
-//		HDC hdc = (HDC) wParam;
+/*
+ * WndProc is the message handler that receives messages from the operating system used to handle input and
+ * output and other events created by the user.
+ *
+ * 'hwnd' is the reference to window.
+ *
+ * 'msg' is the incoming message from the operating system.
+ *
+ * 'wParam' is used to carry information related to a specific message.
+ *
+ * 'lParam' is used to carry additional data related to a message.
+ */
 
-		return 1;
-	}
+LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+
+	/*
+	 * Used to run the correct code based on the incoming message.S
+	 */
+
+	switch (msg) {
+
 	case WM_COMMAND:
 		break;
 
@@ -171,6 +185,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
 		break;
 	}
+
 	case WM_PAINT: {
 		PAINTSTRUCT ps;
 		HDC hdc = BeginPaint(hwnd, &ps);
@@ -211,26 +226,72 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		EndPaint(hwnd, &ps);
 		return 0;
 	}
+
 	default:
+
 		return DefWindowProc(hwnd, msg, wParam, lParam);
 	}
+
 	return 0;
 }
+
+/*
+ * This is the main Windows function where the program begins.
+ *
+ * 'hInstance' is used to represent the instance handle of a Windows application.
+ *
+ * 'lpCmdLine' is a string that contains command-line arguments that might be
+ * passed to the application.
+ *
+ * 'nCmdShow' is used to specify how the main window should be initially displayed.
+ */
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		LPSTR lpCmdLine, int nCmdShow) {
 	const char *className = "TextInputWindowClass";
 
+	/*
+	 * Stores properties used to create our window
+	 */
+
 	WNDCLASS wc = { };
+
+	/*
+	 * Used to specify the memory address of the window procedure.
+	 */
+
 	wc.lpfnWndProc = WndProc;
+
+	/*
+	 * Used to represent the instance handle of a Windows application.
+	 */
+
 	wc.hInstance = hInstance;
+
+	/*
+	 * Used to specify the name of the window class.
+	 */
+
 	wc.lpszClassName = className;
+
+	/*
+	 * Used to register a window class with the Windows operating system
+	 */
+
 	RegisterClass(&wc);
+
+	/*
+	 * Creates Handle to Window function which is used to reference
+	 * the main window that will open when the program is run.
+	 *
+	 * Initialised with values our window will be created with.S
+	 */
 
 	HWND hwnd = CreateWindow(
 			className,
 			"Text Input Window",
 			WS_OVERLAPPEDWINDOW,
-			CW_USEDEFAULT, CW_USEDEFAULT, 400, 300,
+			CW_USEDEFAULT, CW_USEDEFAULT, 900, 600,
 			NULL,
 			NULL,
 			hInstance,
@@ -258,9 +319,23 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 				<< "V-Sync is not supported on this system. Your application will run without V-Sync."
 				<< std::endl;
 	}
+  
+  
+	/*
+	 * Begins clock that the FPS counter used to count FPS
+	 */
 	startTime = std::chrono::steady_clock::now();
 
+	/*
+	 * Displays the window using values specified in 'hwnd' and the WinMain function.
+	 */
+
 	ShowWindow(hwnd, nCmdShow);
+
+	/*
+	 * Begins the while-loop used to translate and send messages to WndProc by the
+	 * Windows operating system.
+	 */
 
 	MSG msg = { };
 	while (GetMessage(&msg, NULL, 0, 0)) {
