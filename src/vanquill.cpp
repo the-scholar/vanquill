@@ -4,6 +4,12 @@
 #include <chrono>
 
 namespace {
+
+template<typename T>
+struct Rect {
+	T top, right, bottom, left;
+};
+
 HDC backBufferDC = nullptr;
 HBITMAP backBufferBitmap = nullptr;
 
@@ -32,6 +38,12 @@ void UpdateFPS(HWND hwnd) {
 	}
 }
 
+template<typename T>
+void printRect(const T &rect) {
+	std::cout << "T: " << rect.top << ", L: " << rect.left << ", R: "
+			<< rect.right << ", B: " << rect.bottom << std::endl;
+}
+
 /*
  * Draws a 54-px width, horizontal line (from right to left) at x, y
  */
@@ -41,14 +53,21 @@ inline void drawLine(const HDC &hdc, int x, int y) {
 }
 
 template<typename T>
-inline bool rectIntersect(const T &top1, const T &left1, const T &right1,
-		const T &bottom1, const T &top2, const T &left2, const T &right2,
+inline bool rectIntersect(const T &top1, const T &right1, const T &left1,
+		const T &bottom1, const T &top2, const T &right2, const T &left2,
 		const T &bottom2) {
-	return left1 < right2 && right1 > left2 && top1 < bottom2 && bottom1 > top2;
+	return left1 <= right2 && left2 <= right1 && top1 <= bottom2
+			&& top2 <= bottom1;
+}
+
+template<typename T>
+inline bool rectIntersect(Rect<T> first, Rect<T> second) {
+	return rectIntersect(first.top, first.right, first.left, first.bottom,
+			second.top, second.right, second.left, second.bottom);
 }
 
 // Used for drawing lines in the note icon.
-// Note icon is 81x96
+// Note icon is 76x96
 void drawNote(const HDC &hdc, int screenx, int screeny) {
 	// TODO Check to make sure note is in viewport
 
@@ -83,8 +102,7 @@ void drawNote(const HDC &hdc, int screenx, int screeny) {
 	DeleteObject(linePen);
 }
 }  // namespace
-float viewportX, viewportY;
-float noteX, noteY;
+int viewportX, viewportY, noteX, noteY;
 
 POINT lastMousePos;  // Stores the last mouse position
 BOOL isPanning = FALSE;  // Indicates whether panning is active
@@ -184,11 +202,19 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		auto &width = rect.right, &height = rect.bottom;
 		auto centerX = width / 2, centerY = height / 2;
 
-		if (rectIntersect<float>(viewportY, viewportX, width + viewportX,
-				height + viewportY, centerY + noteY, centerX + noteX,
-				centerX + noteX + 81, centerY + noteY + 96))
-			drawNote(backBufferDC, centerX + noteX - viewportX,
-					centerY + noteY - viewportY);
+		// TODO Use same coords
+		Rect<long> viewportBounds = { viewportY, width + viewportX, height
+				+ viewportY, viewportX };
+		Rect<long> noteBounds = { noteY, noteX + 76, noteY + 96, noteX };
+
+		std::cout << "\nViewport: ";
+		printRect(viewportBounds);
+		std::cout << "Note: ";
+		printRect(noteBounds);
+
+		drawNote(backBufferDC, noteX - viewportX, noteY - viewportY);
+		if (rectIntersect(viewportBounds, noteBounds))
+			std::cout << "In bounds" << std::endl;
 		else
 			std::cout << "Out of bounds" << std::endl;
 
@@ -271,11 +297,33 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			hInstance,
 			NULL
 	);
+	// Check if V-Sync is supported
+	BOOL vsyncSupported = SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0,
+	NULL, 0);
 
+	if (vsyncSupported) {
+		// V-Sync is supported, attempt to enable it
+		BOOL result = SystemParametersInfo(SPI_SETFONTSMOOTHINGTYPE, 1, NULL,
+				0);
+		if (result) {
+			// V-Sync enabled successfully
+		} else {
+			// V-Sync couldn't be enabled
+			std::cerr
+					<< "V-Sync couldn't be enabled. Your application will run without V-Sync."
+					<< std::endl;
+		}
+	} else {
+		// V-Sync is not supported
+		std::cerr
+				<< "V-Sync is not supported on this system. Your application will run without V-Sync."
+				<< std::endl;
+	}
+  
+  
 	/*
 	 * Begins clock that the FPS counter used to count FPS
 	 */
-
 	startTime = std::chrono::steady_clock::now();
 
 	/*
