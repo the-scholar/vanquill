@@ -6,8 +6,7 @@
 #include <string>
 
 std::chrono::steady_clock::time_point startTime;
-int frameCount = 0;
-int currentFPS = 0;
+int frameCount = 0, currentFPS = 0;
 
 void UpdateFPS::updateFPS(HWND hwnd) {
 	frameCount++;

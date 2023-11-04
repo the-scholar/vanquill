@@ -303,28 +303,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			hInstance,
 			NULL
 	);
-	// Check if V-Sync is supported
-	BOOL vsyncSupported = SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0,
-	NULL, 0);
-
-	if (vsyncSupported) {
-		// V-Sync is supported, attempt to enable it
-		BOOL result = SystemParametersInfo(SPI_SETFONTSMOOTHINGTYPE, 1, NULL,
-				0);
-		if (result) {
-			// V-Sync enabled successfully
-		} else {
-			// V-Sync couldn't be enabled
-			std::cerr
-					<< "V-Sync couldn't be enabled. Your application will run without V-Sync."
-					<< std::endl;
-		}
-	} else {
-		// V-Sync is not supported
-		std::cerr
-				<< "V-Sync is not supported on this system. Your application will run without V-Sync."
-				<< std::endl;
-	}
 
 	/*
 	 * Displays the window using values specified in 'hwnd' and the WinMain function.
