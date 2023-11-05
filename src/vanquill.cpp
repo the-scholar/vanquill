@@ -3,7 +3,6 @@
 #include <wingdi.h>
 #include <winnt.h>
 #include <winuser.h>
-#include <chrono>
 #include <iostream>
 #include <string>
 
@@ -293,18 +292,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	RegisterClass(&wc);
 
-
 	HWND hwnd = CreateWindowEx(
-			WS_EX_LAYERED,
-			className,
-			"Text Input Window",
-			WS_POPUP,
-			CW_USEDEFAULT, CW_USEDEFAULT, 900, 600,
-			NULL,
-			NULL,
-			hInstance,
-			NULL
-	);
+	WS_EX_LAYERED, className, "Text Input Window",
+	WS_POPUP,
+	CW_USEDEFAULT, CW_USEDEFAULT, 900, 600,
+	NULL,
+	NULL, hInstance,
+	NULL);
 
 	/*
 	 * Displays the window using values specified in 'hwnd' and the WinMain function.
