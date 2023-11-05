@@ -293,10 +293,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	RegisterClass(&wc);
 
-	HWND hwnd = CreateWindow(
+
+	HWND hwnd = CreateWindowEx(
+			WS_EX_LAYERED,
 			className,
 			"Text Input Window",
-			WS_OVERLAPPEDWINDOW,
+			WS_POPUP,
 			CW_USEDEFAULT, CW_USEDEFAULT, 900, 600,
 			NULL,
 			NULL,
