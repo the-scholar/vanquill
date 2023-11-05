@@ -1,4 +1,5 @@
 #include <windows.h>
+#include <iostream>
 #include "customWindowFrame.hpp"
 
 /*
@@ -13,31 +14,35 @@
 
 void CustomWindowFrame::customWindowFrame(HWND hwnd, WPARAM wParam,
 		LPARAM lParam) {
-
-	/*
-	 * Creates a new device context to a device context used for drawing operations.
-	 */
-
 	HDC hdc = GetWindowDC(hwnd);
 
 	if (hdc) {
 		RECT rcWindow;
 		GetWindowRect(hwnd, &rcWindow);
+		int width = rcWindow.right - rcWindow.left;
+		int height = rcWindow.bottom - rcWindow.top;
 
-		// Define the red border color
-		COLORREF borderColor = RGB(255, 0, 0);
+		COLORREF borderColor;
 
-		// Create a red pen for drawing with a thicker line (3 pixels in this example)
-		HPEN hRedPen = CreatePen(PS_SOLID, 3, borderColor);
-		HPEN hOldPen = (HPEN) SelectObject(hdc, hRedPen);
+		std::cout<<wParam;
+
+		if (wParam) {
+			// The window is being activated, use an active border color
+			borderColor = RGB(0, 0, 255);
+		} else {
+			// The window is being deactivated (inactive), use an inactive border color
+			borderColor = RGB(128, 128, 128);
+		}
+
+		HPEN hBorderPen = CreatePen(PS_SOLID, 3, borderColor);
+		HPEN hOldPen = (HPEN) SelectObject(hdc, hBorderPen);
 
 		// Draw the border to cover the entire non-client area
-		Rectangle(hdc, 0, 0, rcWindow.right - rcWindow.left,
-				rcWindow.bottom - rcWindow.top);
+		Rectangle(hdc, 0, 0, width, height);
 
 		// Clean up
 		SelectObject(hdc, hOldPen);
-		DeleteObject(hRedPen);
+		DeleteObject(hBorderPen);
 		ReleaseDC(hwnd, hdc);
 	}
 }

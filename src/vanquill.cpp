@@ -21,13 +21,14 @@ HBITMAP backBufferBitmap = nullptr;
 
 template<typename T>
 void printRect(const T &rect) {
-	std::cout << "T: " << rect.top << ", L: " << rect.left << ", R: "
-			<< rect.right << ", B: " << rect.bottom << std::endl;
+//	std::cout << "T: " << rect.top << ", L: " << rect.left << ", R: "
+//			<< rect.right << ", B: " << rect.bottom << std::endl;
 }
 
 /*
  * Draws a 54-px width, horizontal line (from right to left) at x, y
  */
+
 inline void drawLine(const HDC &hdc, int x, int y) {
 	MoveToEx(hdc, x, y, nullptr);
 	LineTo(hdc, x + 54, y);
@@ -191,6 +192,83 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		return 0;
 	}
 
+		/*
+		 * This message lets the OS windows manager know that the window frame is yet
+		 * to be drawn, and needs to do so.
+		 */
+
+	case WM_NCCALCSIZE:
+
+		/*
+		 * By intercepting this message, we can override how Windows draws the borders of the
+		 * client and non-clint area by setting our own parameters for the client area.
+		 */
+
+		if (wParam) {
+
+			NCCALCSIZE_PARAMS *params = (NCCALCSIZE_PARAMS*) lParam;
+
+			/*
+			 * Here, we adjust the left, top, right and bottom parts of the window frame.
+			 */
+
+			params->rgrc[0].left -= 0;
+			params->rgrc[0].top -= 0;
+			params->rgrc[0].right += 0;
+			params->rgrc[0].bottom += 0;
+
+			/*
+			 * Signal to recalculate the client area of the window.
+			 */
+
+			return WVR_REDRAW;
+		}
+
+		break;
+
+		/*
+		 * This message is sent by the OS when a window becomes deactivated or reactivated.
+		 * By intercepting it and running our own code, we stop the window from reverting
+		 * back to the original frame styling.
+		 */
+
+	case WM_NCACTIVATE: {
+
+		/*
+		 * This statement ensures the window is drawn with the proper styling.
+		 */
+
+		(wParam ?
+				CustomWindowFrame().customWindowFrame(hwnd, wParam, lParam) :
+				CustomWindowFrame().customWindowFrame(hwnd, wParam, lParam));
+
+		break;
+	}
+
+		/*
+		 * This message forces the application to handle a move or resize event at
+		 * startup without actually moving or resizing the window in order to force
+		 * the WM-NCCALCSIZE message to be sent by the OS.
+		 */
+
+	case WM_CREATE: {
+
+		/*
+		 * Get the window rect.
+		 */
+
+		RECT rcClient;
+		GetWindowRect(hwnd, &rcClient);
+
+		/*
+		 * Inform the application of the frame change without changing the window's position or size
+		 */
+
+		SetWindowPos(hwnd, NULL, 100, 100, 900, 600, SWP_FRAMECHANGED);
+
+		break;
+	}
+
 	case WM_PAINT: {
 		PAINTSTRUCT ps;
 		HDC hdc = BeginPaint(hwnd, &ps);
@@ -212,30 +290,52 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 				+ viewportY, viewportX };
 		Rect<long> noteBounds = { noteY, noteX + 76, noteY + 96, noteX };
 
-		std::cout << "\nViewport: ";
+//		std::cout << "\nViewport: ";
 		printRect(viewportBounds);
-		std::cout << "Note: ";
+//		std::cout << "Note: ";
 		printRect(noteBounds);
 
 		drawNote(backBufferDC, noteX - viewportX, noteY - viewportY);
-		if (rectIntersect(viewportBounds, noteBounds))
-			std::cout << "In bounds" << std::endl;
-		else
-			std::cout << "Out of bounds" << std::endl;
+//		if (rectIntersect(viewportBounds, noteBounds))
+//			std::cout << std::endl;
+//		 else
+//			std::cout << std::endl;
 
-		BitBlt(hdc, 0, 0, clientRect.right, clientRect.bottom, backBufferDC, 0,
-				0, SRCCOPY);
+			BitBlt(hdc, 0, 0, clientRect.right, clientRect.bottom, backBufferDC,
+					0, 0, SRCCOPY);
+
+		/*
+		 * This creates a new 'UpdateFPS' object which handles the FPS counter in the title bar
+		 * of the window for development reasons.
+		 */
 
 		UpdateFPS().updateFPS(hwnd);
 
+		/*
+		 * End paint opperation.
+		 */
+
 		EndPaint(hwnd, &ps);
+
+		/*
+		 * Return '0' if opperations are successful
+		 */
+
 		return 0;
 	}
+
+		/*
+		 * Default case to handle if no message needs to be handled.
+		 */
 
 	default:
 
 		return DefWindowProc(hwnd, msg, wParam, lParam);
 	}
+
+	/*
+	 * Return '0' if opperations are successful
+	 */
 
 	return 0;
 }
@@ -261,12 +361,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	WNDCLASS wc = { };
 
-	//TODO
+	/*
+	 * Window class stlyes.
+	 */
+
 	wc.style = CS_HREDRAW | CS_VREDRAW;
-	wc.cbClsExtra = 0;
-	wc.cbWndExtra = 0;
-	wc.hIcon = LoadIconA(hInstance, NULL); //TODO
-	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
 
 	/*
 	 * Used to specify the memory address of the window procedure.
@@ -292,10 +391,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	RegisterClass(&wc);
 
+	/*
+	 * Creates a new handle to a window object which specifies some parameters
+	 * for the window such as the title. The size of the window is set to 0 as it
+	 * will be specified later when the 'WM_CREATE' message is handled.
+	 *
+	 * 'WS_EX_ACCEPTFILES' allows the window to accept files that have been dragged
+	 * into it from other applications.
+	 */
+
 	HWND hwnd = CreateWindowEx(
-	WS_EX_LAYERED, className, "Text Input Window",
-	WS_POPUP,
-	CW_USEDEFAULT, CW_USEDEFAULT, 900, 600,
+	WS_EX_ACCEPTFILES, className, "Text Input Window",
+	WS_OVERLAPPEDWINDOW,
+	CW_USEDEFAULT, CW_USEDEFAULT, 0, 0,
 	NULL,
 	NULL, hInstance,
 	NULL);
@@ -316,6 +424,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
+
+	/*
+	 * Return '0' if opperations are successful
+	 */
 
 	return 0;
 }
