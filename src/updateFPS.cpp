@@ -1,12 +1,5 @@
 #include "updateFPS.hpp"
 
-#include <Windows.h>
-#include <winuser.h>
-#include <chrono>
-#include <string>
-
-std::chrono::steady_clock::time_point startTime;
-int frameCount = 0, currentFPS = 0;
 
 void UpdateFPS::updateFPS(HWND hwnd) {
 	frameCount++;
