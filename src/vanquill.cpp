@@ -301,8 +301,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 //		 else
 //			std::cout << std::endl;
 
-			BitBlt(hdc, 0, 0, clientRect.right, clientRect.bottom, backBufferDC,
-					0, 0, SRCCOPY);
+		BitBlt(hdc, 0, 0, clientRect.right, clientRect.bottom, backBufferDC, 0,
+				0, SRCCOPY);
 
 		/*
 		 * This creates a new 'UpdateFPS' object which handles the FPS counter in the title bar
@@ -355,39 +355,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		LPSTR lpCmdLine, int nCmdShow) {
 	const char *className = "TextInputWindowClass";
 
-	/*
-	 * Stores properties used to create our window
-	 */
-
 	WNDCLASS wc = { };
-
-	/*
-	 * Window class stlyes.
-	 */
-
-	wc.style = CS_HREDRAW | CS_VREDRAW;
-
-	/*
-	 * Used to specify the memory address of the window procedure.
-	 */
-
+	wc.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
 	wc.lpfnWndProc = WndProc;
-
-	/*
-	 * Used to represent the instance handle of a Windows application.
-	 */
-
 	wc.hInstance = hInstance;
-
-	/*
-	 * Used to specify the name of the window class.
-	 */
-
 	wc.lpszClassName = className;
-
-	/*
-	 * Used to register a window class with the Windows operating system
-	 */
 
 	RegisterClass(&wc);
 
