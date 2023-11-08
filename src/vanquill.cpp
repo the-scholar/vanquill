@@ -7,7 +7,7 @@
 #include <string>
 
 #include "customWindowFrame.hpp"
-#include "updateFPS.hpp"
+#include "FPSCounter.hpp"
 
 namespace {
 
@@ -295,7 +295,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		 * of the window for development reasons.
 		 */
 
-		UpdateFPS().updateFPS(hwnd);
+		FPSCounter().updateFPS(hwnd);
 
 		EndPaint(hwnd, &ps);
 		return 0;
