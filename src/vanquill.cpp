@@ -9,7 +9,24 @@
 #include "customWindowFrame.hpp"
 #include "updateFPS.hpp"
 
+HBRUSH backgroundBrush = CreateSolidBrush(0xE5F5FF);
+
 namespace {
+
+void printError() {
+
+	// Get the error message
+	LPVOID errorMessage;
+	FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+	NULL, GetLastError(), 0, (LPSTR) &errorMessage, 0, NULL);
+
+	// Display the error message in a message box
+	MessageBox(NULL, (LPCSTR) errorMessage, "Window Registration Failed!",
+	MB_ICONEXCLAMATION | MB_OK);
+
+	// Cleanup
+	LocalFree(errorMessage);
+}
 
 template<typename T>
 struct Rect {
@@ -353,32 +370,29 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		LPSTR lpCmdLine, int nCmdShow) {
-	const char *className = "TextInputWindowClass";
 
-	WNDCLASS wc = { };
-	wc.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
-	wc.lpfnWndProc = WndProc;
-	wc.hInstance = hInstance;
+	// Window class
+	const char *className = "VanquillHome";
+
+	WNDCLASSEX wc = { sizeof(WNDCLASSEX), CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS,
+			WndProc };
 	wc.lpszClassName = className;
+	wc.hInstance = hInstance;
+	wc.hbrBackground = backgroundBrush;
 
-	RegisterClass(&wc);
+	if (!RegisterClassEx(&wc)) {
+		printError();
+		return 0;
+	}
 
-	/*
-	 * Creates a new handle to a window object which specifies some parameters
-	 * for the window such as the title. The size of the window is set to 0 as it
-	 * will be specified later when the 'WM_CREATE' message is handled.
-	 *
-	 * 'WS_EX_ACCEPTFILES' allows the window to accept files that have been dragged
-	 * into it from other applications.
-	 */
-
-	HWND hwnd = CreateWindowEx(
-	WS_EX_ACCEPTFILES, className, "Text Input Window",
-	WS_OVERLAPPEDWINDOW,
-	CW_USEDEFAULT, CW_USEDEFAULT, 0, 0,
-	NULL,
-	NULL, hInstance,
-	NULL);
+	// Create a window of the class.
+	auto hwnd = CreateWindowEx(WS_EX_LEFT, className, "Vanquill", WS_VISIBLE,
+	CW_USEDEFAULT, CW_USEDEFAULT, 800, 600, nullptr, nullptr, hInstance,
+			nullptr);
+	if (!hwnd) {
+		printError();
+		return 0;
+	}
 
 	/*
 	 * Displays the window using values specified in 'hwnd' and the WinMain function.
