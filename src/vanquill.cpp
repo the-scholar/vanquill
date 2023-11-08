@@ -26,9 +26,8 @@ void printRect(const T &rect) {
 }
 
 /*
- * Draws a 54-px width, horizontal line (from right to left) at x, y
+ * Draws a 54-px width, horizontal line (from left to right) at x, y
  */
-
 inline void drawLine(const HDC &hdc, int x, int y) {
 	MoveToEx(hdc, x, y, nullptr);
 	LineTo(hdc, x + 54, y);
@@ -90,19 +89,6 @@ POINT lastMousePos;  // Stores the last mouse position
 BOOL isPanning = FALSE;  // Indicates whether panning is active
 int environmentX = 0;  // X-coordinate of the environment's top-left corner
 int environmentY = 0;  // Y-coordinate of the environment's top-left corner
-
-/*
- * WndProc is the message handler that receives messages from the operating system used to handle input and
- * output and other events created by the user.
- *
- * 'hwnd' is the reference to window.
- *
- * 'msg' is the incoming message from the operating system.
- *
- * 'wParam' is used to carry information related to a specific message.
- *
- * 'lParam' is used to carry additional data related to a message.
- */
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
@@ -301,8 +287,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 //		 else
 //			std::cout << std::endl;
 
-			BitBlt(hdc, 0, 0, clientRect.right, clientRect.bottom, backBufferDC,
-					0, 0, SRCCOPY);
+		BitBlt(hdc, 0, 0, clientRect.right, clientRect.bottom, backBufferDC, 0,
+				0, SRCCOPY);
 
 		/*
 		 * This creates a new 'UpdateFPS' object which handles the FPS counter in the title bar
@@ -311,95 +297,29 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
 		UpdateFPS().updateFPS(hwnd);
 
-		/*
-		 * End paint opperation.
-		 */
-
 		EndPaint(hwnd, &ps);
-
-		/*
-		 * Return '0' if opperations are successful
-		 */
-
 		return 0;
 	}
 
-		/*
-		 * Default case to handle if no message needs to be handled.
-		 */
-
 	default:
-
 		return DefWindowProc(hwnd, msg, wParam, lParam);
 	}
-
-	/*
-	 * Return '0' if opperations are successful
-	 */
 
 	return 0;
 }
 
-/*
- * This is the main Windows function where the program begins.
- *
- * 'hInstance' is used to represent the instance handle of a Windows application.
- *
- * 'lpCmdLine' is a string that contains command-line arguments that might be
- * passed to the application.
- *
- * 'nCmdShow' is used to specify how the main window should be initially displayed.
- */
-
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		LPSTR lpCmdLine, int nCmdShow) {
+	// Window class
 	const char *className = "TextInputWindowClass";
-
-	/*
-	 * Stores properties used to create our window
-	 */
-
 	WNDCLASS wc = { };
-
-	/*
-	 * Window class stlyes.
-	 */
-
 	wc.style = CS_HREDRAW | CS_VREDRAW;
-
-	/*
-	 * Used to specify the memory address of the window procedure.
-	 */
-
 	wc.lpfnWndProc = WndProc;
-
-	/*
-	 * Used to represent the instance handle of a Windows application.
-	 */
-
 	wc.hInstance = hInstance;
-
-	/*
-	 * Used to specify the name of the window class.
-	 */
-
 	wc.lpszClassName = className;
-
-	/*
-	 * Used to register a window class with the Windows operating system
-	 */
-
 	RegisterClass(&wc);
 
-	/*
-	 * Creates a new handle to a window object which specifies some parameters
-	 * for the window such as the title. The size of the window is set to 0 as it
-	 * will be specified later when the 'WM_CREATE' message is handled.
-	 *
-	 * 'WS_EX_ACCEPTFILES' allows the window to accept files that have been dragged
-	 * into it from other applications.
-	 */
-
+	// Window
 	HWND hwnd = CreateWindowEx(
 	WS_EX_ACCEPTFILES, className, "Text Input Window",
 	WS_OVERLAPPEDWINDOW,
@@ -408,26 +328,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	NULL, hInstance,
 	NULL);
 
-	/*
-	 * Displays the window using values specified in 'hwnd' and the WinMain function.
-	 */
-
 	ShowWindow(hwnd, nCmdShow);
 
-	/*
-	 * Begins the while-loop used to translate and send messages to WndProc by the
-	 * Windows operating system.
-	 */
-
+	// Msg loop
 	MSG msg = { };
 	while (GetMessage(&msg, NULL, 0, 0)) {
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
-
-	/*
-	 * Return '0' if opperations are successful
-	 */
 
 	return 0;
 }
