@@ -23,6 +23,11 @@ public:
 	int getLeft() const;
 	int getRight() const;
 	int getTop() const;
+	/*
+	 * Used to adjust the size of the client rect.
+	 * This is designed to be called in a handler for the WM_NCCALCSIZE message.
+	 */
+	void adjustClientRect(RECT&) const;
 };
 
 #endif /* SRC_VANQUILLFRAME_H_ */

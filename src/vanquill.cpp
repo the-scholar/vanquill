@@ -3,11 +3,12 @@
 #include <wingdi.h>
 #include <winnt.h>
 #include <winuser.h>
-#include <string>
 #include <iostream>
+#include <string>
 
 #include "Drawing.hpp"
 #include "FPSCounter.hpp"
+#include "VanquillFrame.h"
 
 namespace {
 
@@ -21,9 +22,6 @@ template<typename T>
 struct Rect {
 	T top, right, bottom, left;
 };
-
-HDC backBufferDC = nullptr;
-HBITMAP backBufferBitmap = nullptr;
 
 template<typename T>
 inline bool rectIntersect(const T &top1, const T &right1, const T &left1,
@@ -40,12 +38,18 @@ inline bool rectIntersect(Rect<T> first, Rect<T> second) {
 }
 
 }  // namespace
+
 int viewportX, viewportY, noteX, noteY;
 
 POINT lastMousePos;  // Stores the last mouse position
 BOOL isPanning = FALSE;  // Indicates whether panning is active
 int environmentX = 0;  // X-coordinate of the environment's top-left corner
 int environmentY = 0;  // Y-coordinate of the environment's top-left corner
+
+HDC backBufferDC = nullptr;
+HBITMAP backBufferBitmap = nullptr;
+
+VanquillFrame frame;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
@@ -117,21 +121,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		if (wParam) {
 
 			NCCALCSIZE_PARAMS *params = (NCCALCSIZE_PARAMS*) lParam;
+			frame.adjustClientRect(params->rgrc[0]);
 
-			/*
-			 * Here, we adjust the left, top, right and bottom parts of the window frame.
-			 */
-
-			params->rgrc[0].left -= 0;
-			params->rgrc[0].top -= 0;
-			params->rgrc[0].right += 0;
-			params->rgrc[0].bottom += 0;
-
-			/*
-			 * Signal to recalculate the client area of the window.
-			 */
-
-			return WVR_REDRAW;
+			return WVR_REDRAW; // Signal to recalculate the client area of the window.
 		}
 
 		break;

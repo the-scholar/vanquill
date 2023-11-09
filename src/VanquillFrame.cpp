@@ -32,3 +32,10 @@ int VanquillFrame::getTop() const {
 void VanquillFrame::draw(const HDC &hdc) const {
 
 }
+
+void VanquillFrame::adjustClientRect(RECT &clientRect) const {
+	clientRect.left += getLeft();
+	clientRect.top += getTop();
+	clientRect.right -= getRight();
+	clientRect.bottom -= getBottom();
+}
