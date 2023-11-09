@@ -13,12 +13,22 @@
 
 namespace drawing {
 
+namespace {
+template<typename T>
+inline void printRect(const T &rect) {
+	std::cout << "T: " << rect.top << ", L: " << rect.left << ", R: "
+			<< rect.right << ", B: " << rect.bottom << std::endl;
+}
+}
+
 void drawFrame(HWND hwnd, WPARAM wParam, LPARAM lParam) {
 	HDC hdc = GetWindowDC(hwnd);
 
 	if (hdc) {
 		RECT rcWindow;
 		GetWindowRect(hwnd, &rcWindow);
+		std::cout << "Window: ";
+		printRect(rcWindow);
 		int width = rcWindow.right - rcWindow.left;
 		int height = rcWindow.bottom - rcWindow.top;
 
@@ -86,6 +96,9 @@ void drawNote(const HDC &hdc, int screenx, int screeny) {
 inline void drawLine(const HDC &hdc, int x, int y) {
 	MoveToEx(hdc, x, y, nullptr);
 	LineTo(hdc, x + 54, y);
+}
+
+void drawScene(const HDC&) {
 }
 
 }  // namespace drawing

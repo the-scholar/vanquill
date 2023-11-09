@@ -4,11 +4,18 @@
 #include <winnt.h>
 #include <winuser.h>
 #include <string>
+#include <iostream>
 
 #include "Drawing.hpp"
 #include "FPSCounter.hpp"
 
 namespace {
+
+template<typename T>
+inline void printRect(const T &rect) {
+	std::cout << "T: " << rect.top << ", L: " << rect.left << ", R: "
+			<< rect.right << ", B: " << rect.bottom << std::endl;
+}
 
 template<typename T>
 struct Rect {
@@ -47,21 +54,17 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	 */
 
 	switch (msg) {
-
 	case WM_COMMAND:
 		break;
-
 	case WM_CLOSE:
 		PostQuitMessage(0);
 		break;
-
 	case WM_LBUTTONDOWN:
 		lastMousePos.x = LOWORD(lParam);
 		lastMousePos.y = HIWORD(lParam);
 		isPanning = TRUE;
 		SetCapture(hwnd);
 		return 0;
-
 	case WM_MOUSEMOVE:
 		if (isPanning) {
 			int deltaX = LOWORD(lParam) - lastMousePos.x;
@@ -75,7 +78,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 			InvalidateRect(hwnd, NULL, TRUE);
 		}
 		break;  // Make sure to break here
-
 	case WM_LBUTTONUP:
 		if (isPanning) {
 			isPanning = FALSE;
@@ -101,6 +103,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
 		SelectObject(backBufferDC, backBufferBitmap);
 
+		EndPaint(hwnd, &ps);
 		break;
 	}
 
@@ -109,17 +112,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		return 0;
 	}
 
-		/*
-		 * This message lets the OS windows manager know that the window frame is yet
-		 * to be drawn, and needs to do so.
-		 */
-
 	case WM_NCCALCSIZE:
-
-		/*
-		 * By intercepting this message, we can override how Windows draws the borders of the
-		 * client and non-clint area by setting our own parameters for the client area.
-		 */
 
 		if (wParam) {
 
@@ -151,10 +144,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
 	case WM_NCACTIVATE: {
 
-		/*
-		 * This statement ensures the window is drawn with the proper styling.
-		 */
-
 		drawing::drawFrame(hwnd, wParam, lParam);
 
 		break;
@@ -174,6 +163,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
 		RECT rcClient;
 		GetWindowRect(hwnd, &rcClient);
+		std::cout << "Window: ";
+		printRect(rcClient);
 
 		/*
 		 * Inform the application of the frame change without changing the window's position or size
@@ -185,11 +176,17 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	}
 
 	case WM_PAINT: {
+
 		PAINTSTRUCT ps;
 		HDC hdc = BeginPaint(hwnd, &ps);
 
+		drawing::drawScene(hdc);
+
 		RECT clientRect;
 		GetClientRect(hwnd, &clientRect);
+
+		std::cout << "Client: ";
+		printRect(clientRect);
 
 		HBRUSH hBackground = CreateSolidBrush(0xE5F5FF);
 		FillRect(backBufferDC, &clientRect, hBackground);

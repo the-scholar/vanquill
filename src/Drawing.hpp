@@ -16,6 +16,7 @@ namespace drawing {
 void drawFrame(HWND, WPARAM, LPARAM);
 void drawNote(const HDC&, int, int);
 inline void drawLine(const HDC&, int, int);
+void drawScene(const HDC&);
 
 }  // namespace drawing
 
