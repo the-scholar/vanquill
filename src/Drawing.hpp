@@ -13,7 +13,9 @@
 
 namespace drawing {
 
-void drawFrame(HWND hwnd, WPARAM wParam, LPARAM lParam);
+void drawFrame(HWND, WPARAM, LPARAM);
+void drawNote(const HDC&, int, int);
+inline void drawLine(const HDC&, int, int);
 
 }  // namespace drawing
 
