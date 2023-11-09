@@ -18,12 +18,6 @@ struct Rect {
 HDC backBufferDC = nullptr;
 HBITMAP backBufferBitmap = nullptr;
 
-template<typename T>
-void printRect(const T &rect) {
-//	std::cout << "T: " << rect.top << ", L: " << rect.left << ", R: "
-//			<< rect.right << ", B: " << rect.bottom << std::endl;
-}
-
 /*
  * Draws a 54-px width, horizontal line (from left to right) at x, y
  */
@@ -254,16 +248,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 				+ viewportY, viewportX };
 		Rect<long> noteBounds = { noteY, noteX + 76, noteY + 96, noteX };
 
-//		std::cout << "\nViewport: ";
-		printRect(viewportBounds);
-//		std::cout << "Note: ";
-		printRect(noteBounds);
 
 		drawNote(backBufferDC, noteX - viewportX, noteY - viewportY);
-//		if (rectIntersect(viewportBounds, noteBounds))
-//			std::cout << std::endl;
-//		 else
-//			std::cout << std::endl;
 
 		BitBlt(hdc, 0, 0, clientRect.right, clientRect.bottom, backBufferDC, 0,
 				0, SRCCOPY);
