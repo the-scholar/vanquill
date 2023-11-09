@@ -11,6 +11,8 @@
 #include <winuser.h>
 #include <iostream>
 
+namespace drawing {
+
 void drawFrame(HWND hwnd, WPARAM wParam, LPARAM lParam) {
 	HDC hdc = GetWindowDC(hwnd);
 
@@ -44,3 +46,6 @@ void drawFrame(HWND hwnd, WPARAM wParam, LPARAM lParam) {
 		ReleaseDC(hwnd, hdc);
 	}
 }
+
+}  // namespace drawing
+

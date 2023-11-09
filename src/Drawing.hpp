@@ -11,8 +11,10 @@
 #include <minwindef.h>
 #include <windef.h>
 
+namespace drawing {
 
 void drawFrame(HWND hwnd, WPARAM wParam, LPARAM lParam);
 
+}  // namespace drawing
 
 #endif /* SRC_DRAWING_HPP_ */
