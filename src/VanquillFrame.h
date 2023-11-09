@@ -18,7 +18,11 @@ class VanquillFrame {
 public:
 	VanquillFrame();
 	virtual ~VanquillFrame();
-	void draw(const HDC&);
+	void draw(const HDC&) const;
+	int getBottom() const;
+	int getLeft() const;
+	int getRight() const;
+	int getTop() const;
 };
 
 #endif /* SRC_VANQUILLFRAME_H_ */
