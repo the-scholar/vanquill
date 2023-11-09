@@ -1,56 +1,27 @@
-#include <iostream>
-#include <windows.h>
+#include <minwindef.h>
+#include <windef.h>
 #include <wingdi.h>
-#include <chrono>
+#include <winnt.h>
+#include <winuser.h>
+#include <iostream>
+#include <string>
+
+#include "Drawing.hpp"
+#include "FPSCounter.hpp"
+#include "VanquillFrame.h"
 
 namespace {
+
+template<typename T>
+inline void printRect(const T &rect) {
+	std::cout << "T: " << rect.top << ", L: " << rect.left << ", R: "
+			<< rect.right << ", B: " << rect.bottom << std::endl;
+}
 
 template<typename T>
 struct Rect {
 	T top, right, bottom, left;
 };
-
-HDC backBufferDC = nullptr;
-HBITMAP backBufferBitmap = nullptr;
-
-std::chrono::steady_clock::time_point startTime;
-int frameCount = 0;
-int currentFPS = 0;
-
-void UpdateFPS(HWND hwnd) {
-	frameCount++;
-
-	// Calculate elapsed time since the start
-	auto currentTime = std::chrono::steady_clock::now();
-	auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(
-			currentTime - startTime).count();
-
-	// Recalculate FPS every second
-	if (elapsedTime >= 30) {
-		currentFPS = frameCount;
-		frameCount = 0;
-		startTime = currentTime;
-
-		// Update the window title with FPS information
-		std::wstring title = L"Your Window Title - FPS: "
-				+ std::to_wstring(currentFPS * 1000 / 30);
-		SetWindowTextW(hwnd, title.c_str());
-	}
-}
-
-template<typename T>
-void printRect(const T &rect) {
-	std::cout << "T: " << rect.top << ", L: " << rect.left << ", R: "
-			<< rect.right << ", B: " << rect.bottom << std::endl;
-}
-
-/*
- * Draws a 54-px width, horizontal line (from right to left) at x, y
- */
-inline void drawLine(const HDC &hdc, int x, int y) {
-	MoveToEx(hdc, x, y, nullptr);
-	LineTo(hdc, x + 54, y);
-}
 
 template<typename T>
 inline bool rectIntersect(const T &top1, const T &right1, const T &left1,
@@ -66,42 +37,8 @@ inline bool rectIntersect(Rect<T> first, Rect<T> second) {
 			second.top, second.right, second.left, second.bottom);
 }
 
-// Used for drawing lines in the note icon.
-// Note icon is 76x96
-void drawNote(const HDC &hdc, int screenx, int screeny) {
-	// TODO Check to make sure note is in viewport
-
-	// Draw the filled background
-	HBRUSH hBackground = CreateSolidBrush(0xFFFFFF);
-	PAINTSTRUCT ps;
-	FillRect(hdc, &ps.rcPaint, hBackground);
-	DeleteObject(hBackground);
-
-	// Draw the rectangle border
-	HPEN rectPen = CreatePen(PS_SOLID, 3, 0);
-	HGDIOBJ hOldPen = SelectObject(hdc, rectPen);
-	Rectangle(hdc, screenx, screeny, screenx + 75, screeny + 90);
-
-	// Draw lines
-	LOGBRUSH lb = {
-	BS_SOLID, 0 };
-	HPEN linePen = ExtCreatePen(
-	PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_FLAT | PS_JOIN_MITER, 3, &lb, 0,
-			nullptr);
-	SelectObject(hdc, linePen);
-	DeleteObject(rectPen); // Delete rect pen after switching to line pen.
-
-	drawLine(hdc, screenx += 10, screeny + 14);
-	drawLine(hdc, screenx, screeny + 24);
-	drawLine(hdc, screenx, screeny + 44);
-	drawLine(hdc, screenx, screeny + 54);
-	drawLine(hdc, screenx, screeny + 64);
-	drawLine(hdc, screenx, screeny + 74);
-
-	SelectObject(hdc, hOldPen);
-	DeleteObject(linePen);
-}
 }  // namespace
+
 int viewportX, viewportY, noteX, noteY;
 
 POINT lastMousePos;  // Stores the last mouse position
@@ -109,18 +46,10 @@ BOOL isPanning = FALSE;  // Indicates whether panning is active
 int environmentX = 0;  // X-coordinate of the environment's top-left corner
 int environmentY = 0;  // Y-coordinate of the environment's top-left corner
 
-/*
- * WndProc is the message handler that receives messages from the operating system used to handle input and
- * output and other events created by the user.
- *
- * 'hwnd' is the reference to window.
- *
- * 'msg' is the incoming message from the operating system.
- *
- * 'wParam' is used to carry information related to a specific message.
- *
- * 'lParam' is used to carry additional data related to a message.
- */
+HDC backBufferDC = nullptr;
+HBITMAP backBufferBitmap = nullptr;
+
+VanquillFrame frame;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
@@ -129,21 +58,17 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	 */
 
 	switch (msg) {
-
 	case WM_COMMAND:
 		break;
-
 	case WM_CLOSE:
 		PostQuitMessage(0);
 		break;
-
 	case WM_LBUTTONDOWN:
 		lastMousePos.x = LOWORD(lParam);
 		lastMousePos.y = HIWORD(lParam);
 		isPanning = TRUE;
 		SetCapture(hwnd);
 		return 0;
-
 	case WM_MOUSEMOVE:
 		if (isPanning) {
 			int deltaX = LOWORD(lParam) - lastMousePos.x;
@@ -157,7 +82,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 			InvalidateRect(hwnd, NULL, TRUE);
 		}
 		break;  // Make sure to break here
-
 	case WM_LBUTTONUP:
 		if (isPanning) {
 			isPanning = FALSE;
@@ -183,12 +107,70 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
 		SelectObject(backBufferDC, backBufferBitmap);
 
+		EndPaint(hwnd, &ps);
+		break;
+	}
+
+	case WM_NCPAINT: {
+		frame.draw(hwnd, wParam, lParam);
+		return 0;
+	}
+
+	case WM_NCCALCSIZE:
+
+		if (wParam) {
+
+			NCCALCSIZE_PARAMS *params = (NCCALCSIZE_PARAMS*) lParam;
+			frame.adjustClientRect(params->rgrc[0]);
+
+			return WVR_REDRAW; // Signal to recalculate the client area of the window.
+		}
+
+		break;
+
+		/*
+		 * This message is sent by the OS when a window becomes deactivated or reactivated.
+		 * By intercepting it and running our own code, we stop the window from reverting
+		 * back to the original frame styling.
+		 */
+
+	case WM_NCACTIVATE: {
+
+		frame.draw(hwnd, wParam, lParam);
+
+		break;
+	}
+
+		/*
+		 * This message forces the application to handle a move or resize event at
+		 * startup without actually moving or resizing the window in order to force
+		 * the WM-NCCALCSIZE message to be sent by the OS.
+		 */
+
+	case WM_CREATE: {
+
+		/*
+		 * Get the window rect.
+		 */
+
+		RECT rcClient;
+		GetWindowRect(hwnd, &rcClient);
+
+		/*
+		 * Inform the application of the frame change without changing the window's position or size
+		 */
+
+		SetWindowPos(hwnd, NULL, 100, 100, 900, 600, SWP_FRAMECHANGED);
+
 		break;
 	}
 
 	case WM_PAINT: {
+
 		PAINTSTRUCT ps;
 		HDC hdc = BeginPaint(hwnd, &ps);
+
+		drawing::drawScene(hdc);
 
 		RECT clientRect;
 		GetClientRect(hwnd, &clientRect);
@@ -207,136 +189,52 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 				+ viewportY, viewportX };
 		Rect<long> noteBounds = { noteY, noteX + 76, noteY + 96, noteX };
 
-		std::cout << "\nViewport: ";
-		printRect(viewportBounds);
-		std::cout << "Note: ";
-		printRect(noteBounds);
-
-		drawNote(backBufferDC, noteX - viewportX, noteY - viewportY);
-		if (rectIntersect(viewportBounds, noteBounds))
-			std::cout << "In bounds" << std::endl;
-		else
-			std::cout << "Out of bounds" << std::endl;
+		drawing::drawNote(backBufferDC, noteX - viewportX, noteY - viewportY);
 
 		BitBlt(hdc, 0, 0, clientRect.right, clientRect.bottom, backBufferDC, 0,
 				0, SRCCOPY);
 
-		UpdateFPS(hwnd);
+		/*
+		 * This creates a new 'UpdateFPS' object which handles the FPS counter in the title bar
+		 * of the window for development reasons.
+		 */
+
+		FPSCounter().updateFPS(hwnd);
 
 		EndPaint(hwnd, &ps);
 		return 0;
 	}
 
 	default:
-
 		return DefWindowProc(hwnd, msg, wParam, lParam);
 	}
 
 	return 0;
 }
 
-/*
- * This is the main Windows function where the program begins.
- *
- * 'hInstance' is used to represent the instance handle of a Windows application.
- *
- * 'lpCmdLine' is a string that contains command-line arguments that might be
- * passed to the application.
- *
- * 'nCmdShow' is used to specify how the main window should be initially displayed.
- */
-
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		LPSTR lpCmdLine, int nCmdShow) {
+	// Window class
 	const char *className = "TextInputWindowClass";
-
-	/*
-	 * Stores properties used to create our window
-	 */
-
 	WNDCLASS wc = { };
-
-	/*
-	 * Used to specify the memory address of the window procedure.
-	 */
-
+	wc.style = CS_HREDRAW | CS_VREDRAW;
 	wc.lpfnWndProc = WndProc;
-
-	/*
-	 * Used to represent the instance handle of a Windows application.
-	 */
-
 	wc.hInstance = hInstance;
-
-	/*
-	 * Used to specify the name of the window class.
-	 */
-
 	wc.lpszClassName = className;
-
-	/*
-	 * Used to register a window class with the Windows operating system
-	 */
-
 	RegisterClass(&wc);
 
-	/*
-	 * Creates Handle to Window function which is used to reference
-	 * the main window that will open when the program is run.
-	 *
-	 * Initialised with values our window will be created with.S
-	 */
-
-	HWND hwnd = CreateWindow(
-			className,
-			"Text Input Window",
-			WS_OVERLAPPEDWINDOW,
-			CW_USEDEFAULT, CW_USEDEFAULT, 900, 600,
-			NULL,
-			NULL,
-			hInstance,
-			NULL
-	);
-	// Check if V-Sync is supported
-	BOOL vsyncSupported = SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0,
-	NULL, 0);
-
-	if (vsyncSupported) {
-		// V-Sync is supported, attempt to enable it
-		BOOL result = SystemParametersInfo(SPI_SETFONTSMOOTHINGTYPE, 1, NULL,
-				0);
-		if (result) {
-			// V-Sync enabled successfully
-		} else {
-			// V-Sync couldn't be enabled
-			std::cerr
-					<< "V-Sync couldn't be enabled. Your application will run without V-Sync."
-					<< std::endl;
-		}
-	} else {
-		// V-Sync is not supported
-		std::cerr
-				<< "V-Sync is not supported on this system. Your application will run without V-Sync."
-				<< std::endl;
-	}
-  
-  
-	/*
-	 * Begins clock that the FPS counter used to count FPS
-	 */
-	startTime = std::chrono::steady_clock::now();
-
-	/*
-	 * Displays the window using values specified in 'hwnd' and the WinMain function.
-	 */
+	// Window
+	HWND hwnd = CreateWindowEx(
+	WS_EX_ACCEPTFILES, className, "Text Input Window",
+	WS_OVERLAPPEDWINDOW,
+	CW_USEDEFAULT, CW_USEDEFAULT, 0, 0,
+	NULL,
+	NULL, hInstance,
+	NULL);
 
 	ShowWindow(hwnd, nCmdShow);
 
-	/*
-	 * Begins the while-loop used to translate and send messages to WndProc by the
-	 * Windows operating system.
-	 */
-
+	// Msg loop
 	MSG msg = { };
 	while (GetMessage(&msg, NULL, 0, 0)) {
 		TranslateMessage(&msg);
