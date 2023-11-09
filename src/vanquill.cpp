@@ -3,10 +3,9 @@
 #include <wingdi.h>
 #include <winnt.h>
 #include <winuser.h>
-#include <iostream>
 #include <string>
 
-#include "customWindowFrame.hpp"
+#include "Drawing.hpp"
 #include "FPSCounter.hpp"
 
 namespace {
@@ -154,27 +153,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		break;
 	}
 
-		/*
-		 * Handles custom window frame painting in order to customise the way the window
-		 * border looks, as well as to add extra functionality to the window borders
-		 * such as tabs for open files, access to menus and other items from the window
-		 * frame, as well as custom colors and themeing.
-		 *
-		 * 'WM_NCPAINT' message is sent when the non-client area of the window needs to
-		 * be painted.
-		 *
-		 */
-
 	case WM_NCPAINT: {
-
-		/*
-		 * The function 'customWindowFrame()' contains the logic required to
-		 * customise the window frame, as well as introduce future modularity
-		 * and possible themeing to the application.
-		 */
-
-		CustomWindowFrame().customWindowFrame(hwnd, wParam, lParam);
-
+		drawing::drawFrame(hwnd, wParam, lParam);
 		return 0;
 	}
 
@@ -224,9 +204,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		 * This statement ensures the window is drawn with the proper styling.
 		 */
 
-		(wParam ?
-				CustomWindowFrame().customWindowFrame(hwnd, wParam, lParam) :
-				CustomWindowFrame().customWindowFrame(hwnd, wParam, lParam));
+		drawing::drawFrame(hwnd, wParam, lParam);
 
 		break;
 	}
