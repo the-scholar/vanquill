@@ -112,7 +112,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	}
 
 	case WM_NCPAINT: {
-		drawing::drawFrame(hwnd, wParam, lParam);
+		frame.draw(hwnd, wParam, lParam);
 		return 0;
 	}
 
@@ -136,7 +136,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
 	case WM_NCACTIVATE: {
 
-		drawing::drawFrame(hwnd, wParam, lParam);
+		frame.draw(hwnd, wParam, lParam);
 
 		break;
 	}
@@ -155,8 +155,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
 		RECT rcClient;
 		GetWindowRect(hwnd, &rcClient);
-		std::cout << "Window: ";
-		printRect(rcClient);
 
 		/*
 		 * Inform the application of the frame change without changing the window's position or size
@@ -176,9 +174,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
 		RECT clientRect;
 		GetClientRect(hwnd, &clientRect);
-
-		std::cout << "Client: ";
-		printRect(clientRect);
 
 		HBRUSH hBackground = CreateSolidBrush(0xE5F5FF);
 		FillRect(backBufferDC, &clientRect, hBackground);

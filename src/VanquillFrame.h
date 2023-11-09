@@ -18,7 +18,7 @@ class VanquillFrame {
 public:
 	VanquillFrame();
 	virtual ~VanquillFrame();
-	void draw(const HDC&) const;
+	void draw(HWND, WPARAM, LPARAM) const;
 	int getBottom() const;
 	int getLeft() const;
 	int getRight() const;
