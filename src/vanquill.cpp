@@ -37,6 +37,11 @@ inline bool rectIntersect(Rect<T> first, Rect<T> second) {
 			second.top, second.right, second.left, second.bottom);
 }
 
+template<typename T>
+void print(T item) {
+	std::cout << item << std::endl;
+}
+
 }  // namespace
 
 int viewportX, viewportY, noteX, noteY;
@@ -61,6 +66,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	case WM_COMMAND:
 		break;
 	case WM_CLOSE:
+		print("WM_CLOSE");
 		PostQuitMessage(0);
 		break;
 	case WM_LBUTTONDOWN:
@@ -89,35 +95,39 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		}
 		return 0;
 
-	case WM_SIZE: {
-		PAINTSTRUCT ps;
-		HDC hdc = BeginPaint(hwnd, &ps);
+	case WM_SIZE:
+		print("WM_SIZE");
+		{
+			PAINTSTRUCT ps;
+			HDC hdc = BeginPaint(hwnd, &ps);
 
-		RECT clientRect;
-		GetClientRect(hwnd, &clientRect);
+			RECT clientRect;
+			GetClientRect(hwnd, &clientRect);
 
-		if (backBufferDC)
-			DeleteDC(backBufferDC);
-		if (backBufferBitmap)
-			DeleteObject(backBufferBitmap);
+			if (backBufferDC)
+				DeleteDC(backBufferDC);
+			if (backBufferBitmap)
+				DeleteObject(backBufferBitmap);
 
-		backBufferDC = CreateCompatibleDC(hdc);
-		backBufferBitmap = CreateCompatibleBitmap(hdc, clientRect.right,
-				clientRect.bottom);
+			backBufferDC = CreateCompatibleDC(hdc);
+			backBufferBitmap = CreateCompatibleBitmap(hdc, clientRect.right,
+					clientRect.bottom);
 
-		SelectObject(backBufferDC, backBufferBitmap);
+			SelectObject(backBufferDC, backBufferBitmap);
 
-		EndPaint(hwnd, &ps);
-		break;
-	}
+			EndPaint(hwnd, &ps);
+			break;
+		}
 
-	case WM_NCPAINT: {
-		frame.draw(hwnd, wParam, lParam);
-		return 0;
-	}
+	case WM_NCPAINT:
+		print("WM_NCPAINT");
+		{
+			frame.draw(hwnd, wParam, lParam);
+			return 0;
+		}
 
 	case WM_NCCALCSIZE:
-
+		print("WM_NCCALCSIZE");
 		if (wParam) {
 
 			NCCALCSIZE_PARAMS *params = (NCCALCSIZE_PARAMS*) lParam;
@@ -134,76 +144,78 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		 * back to the original frame styling.
 		 */
 
-	case WM_NCACTIVATE: {
+	case WM_NCACTIVATE:
+		print("WM_NCACTIVATE");
+		{
 
-		frame.draw(hwnd, wParam, lParam);
+			frame.draw(hwnd, wParam, lParam);
 
+			break;
+		}
+
+	case WM_SHOWWINDOW:
+		print("WM_SHOWWINDOW");
+		RedrawWindow(hwnd, NULL, NULL,
+		RDW_ERASE | RDW_FRAME | RDW_INVALIDATE | RDW_ALLCHILDREN);
 		break;
-	}
+	case WM_CREATE:
+		print("WM_CREATE");
+		{
 
-		/*
-		 * This message forces the application to handle a move or resize event at
-		 * startup without actually moving or resizing the window in order to force
-		 * the WM-NCCALCSIZE message to be sent by the OS.
-		 */
+			/*
+			 * Get the window rect.
+			 */
 
-	case WM_CREATE: {
+			RECT rcClient;
+			GetWindowRect(hwnd, &rcClient);
 
-		/*
-		 * Get the window rect.
-		 */
+			SetWindowPos(hwnd, NULL, 100, 100, 900, 600, SWP_FRAMECHANGED);
 
-		RECT rcClient;
-		GetWindowRect(hwnd, &rcClient);
+			break;
+		}
 
-		/*
-		 * Inform the application of the frame change without changing the window's position or size
-		 */
+	case WM_PAINT:
+		print("WM_PAINT");
+		{
 
-		SetWindowPos(hwnd, NULL, 100, 100, 900, 600, SWP_FRAMECHANGED);
+			PAINTSTRUCT ps;
+			HDC hdc = BeginPaint(hwnd, &ps);
 
-		break;
-	}
+			drawing::drawScene(hdc);
 
-	case WM_PAINT: {
+			RECT clientRect;
+			GetClientRect(hwnd, &clientRect);
 
-		PAINTSTRUCT ps;
-		HDC hdc = BeginPaint(hwnd, &ps);
+			HBRUSH hBackground = CreateSolidBrush(0xE5F5FF);
+			FillRect(backBufferDC, &clientRect, hBackground);
+			DeleteObject(hBackground);
 
-		drawing::drawScene(hdc);
+			RECT rect;
+			GetClientRect(hwnd, &rect);
+			auto &width = rect.right, &height = rect.bottom;
+			auto centerX = width / 2, centerY = height / 2;
 
-		RECT clientRect;
-		GetClientRect(hwnd, &clientRect);
+			// TODO Use same coords
+			Rect<long> viewportBounds = { viewportY, width + viewportX, height
+					+ viewportY, viewportX };
+			Rect<long> noteBounds = { noteY, noteX + 76, noteY + 96, noteX };
 
-		HBRUSH hBackground = CreateSolidBrush(0xE5F5FF);
-		FillRect(backBufferDC, &clientRect, hBackground);
-		DeleteObject(hBackground);
+			drawing::drawNote(backBufferDC, noteX - viewportX,
+					noteY - viewportY);
 
-		RECT rect;
-		GetClientRect(hwnd, &rect);
-		auto &width = rect.right, &height = rect.bottom;
-		auto centerX = width / 2, centerY = height / 2;
+			BitBlt(hdc, 0, 0, clientRect.right, clientRect.bottom, backBufferDC,
+					0, 0, SRCCOPY);
 
-		// TODO Use same coords
-		Rect<long> viewportBounds = { viewportY, width + viewportX, height
-				+ viewportY, viewportX };
-		Rect<long> noteBounds = { noteY, noteX + 76, noteY + 96, noteX };
+			/*
+			 * This creates a new 'UpdateFPS' object which handles the FPS counter in the title bar
+			 * of the window for development reasons.
+			 */
 
-		drawing::drawNote(backBufferDC, noteX - viewportX, noteY - viewportY);
+			FPSCounter().updateFPS(hwnd);
 
-		BitBlt(hdc, 0, 0, clientRect.right, clientRect.bottom, backBufferDC, 0,
-				0, SRCCOPY);
-
-		/*
-		 * This creates a new 'UpdateFPS' object which handles the FPS counter in the title bar
-		 * of the window for development reasons.
-		 */
-
-		FPSCounter().updateFPS(hwnd);
-
-		EndPaint(hwnd, &ps);
-		return 0;
-	}
+			EndPaint(hwnd, &ps);
+			return 0;
+		}
 
 	default:
 		return DefWindowProc(hwnd, msg, wParam, lParam);
