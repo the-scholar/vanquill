@@ -116,8 +116,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 			SelectObject(backBufferDC, backBufferBitmap);
 
 			EndPaint(hwnd, &ps);
-			break;
 		}
+	case WM_EXITSIZEMOVE: {
+		RECT rect;
+		GetClientRect(hwnd, &rect);
+		InvalidateRect(hwnd, &rect, false);
+		break;
+	}
 
 	case WM_NCPAINT:
 		print("WM_NCPAINT");
@@ -181,7 +186,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 			PAINTSTRUCT ps;
 			HDC hdc = BeginPaint(hwnd, &ps);
 
-			drawing::drawScene(hdc);
+			drawing::drawScene(backBufferDC);
 
 			RECT clientRect;
 			GetClientRect(hwnd, &clientRect);
@@ -206,14 +211,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 			BitBlt(hdc, 0, 0, clientRect.right, clientRect.bottom, backBufferDC,
 					0, 0, SRCCOPY);
 
-			/*
-			 * This creates a new 'UpdateFPS' object which handles the FPS counter in the title bar
-			 * of the window for development reasons.
-			 */
-
 			FPSCounter().updateFPS(hwnd);
 
 			EndPaint(hwnd, &ps);
+
 			return 0;
 		}
 
