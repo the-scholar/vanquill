@@ -163,6 +163,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		RedrawWindow(hwnd, NULL, NULL,
 		RDW_ERASE | RDW_FRAME | RDW_INVALIDATE | RDW_ALLCHILDREN);
 		break;
+
 	case WM_CREATE:
 		print("WM_CREATE");
 		{
