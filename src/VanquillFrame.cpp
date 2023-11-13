@@ -44,23 +44,13 @@ void VanquillFrame::draw(HWND hwnd, WPARAM wParam, LPARAM lParam) const {
 		int height = rcWindow.bottom - rcWindow.top;
 
 		COLORREF borderColor = wParam ? 0 : 0x777777;
-		HBRUSH brush = CreateSolidBrush(borderColor);
 
-		HPEN hBorderPen = CreatePen(PS_SOLID, 30, borderColor);
+		HPEN hBorderPen = CreatePen(PS_SOLID, top, borderColor);
 		HPEN hOldPen = (HPEN) SelectObject(hdc, hBorderPen);
 
 		// Draw the border to cover the entire non-client area
-		RECT rect = { 0, 0, width, getTop() };
-		FillRect(hdc, &rect, brush); // Top
-
-		rect = { 0, 0, getLeft(), height };
-		FillRect(hdc, &rect, brush); // Left
-
-		rect = { 0, height - getBottom(), width, height };
-		FillRect(hdc, &rect, brush); // Bottom
-
-		rect = { width - getRight(), 0, width, height };
-		FillRect(hdc, &rect, brush); // Right
+		RoundRect(hdc, left - top / 2, top / 2, top / 2 - right + width,
+				top / 2 - bottom + height, top, top); // We divide by 2 because the stroke/rectangular-border is drawn so that it is "centered" along the rectangle's edges.
 
 		// Clean up
 		SelectObject(hdc, hOldPen);
