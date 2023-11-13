@@ -98,6 +98,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	case WM_SIZE:
 		print("WM_SIZE");
 		{
+			RECT windReg;
+			GetWindowRect(hwnd, &windReg);
+			HRGN hggn = CreateRoundRectRgn(0, 0, windReg.right - windReg.left,
+					windReg.bottom - windReg.top, 30, 20);
+			// Apply the region to the window
+			SetWindowRgn(hwnd, hggn, TRUE);
+
 			PAINTSTRUCT ps;
 			HDC hdc = BeginPaint(hwnd, &ps);
 
@@ -250,11 +257,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	NULL, hInstance,
 	NULL);
 
-	HRGN hggn = CreateRoundRectRgn(0, 0, 1000, 1000, 20, 20);
-
-	// Apply the region to the window
-	SetWindowRgn(hwnd, hggn, TRUE);
-
 	// Show the window
 	ShowWindow(hwnd, SW_SHOWDEFAULT);
 	UpdateWindow(hwnd);
@@ -265,9 +267,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
-
-	// Release the region
-	DeleteObject(hggn);
 
 	// Unregister the window class
 	UnregisterClass(wc.lpszClassName, wc.hInstance);
