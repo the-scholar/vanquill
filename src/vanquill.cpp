@@ -170,23 +170,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		print("WM_CREATE");
 		{
 
-			// ...
-			// Perform app resource initialization after window creation
-			// ...
-
-			if (hwnd) {
-				DWM_WINDOW_CORNER_PREFERENCE preference = DWMWCP_ROUND;
-				DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE,
-						&preference, sizeof(preference));
-			}
-
-			/*
-			 * Get the window rect.
-			 */
+			// Rounded Corners
+			DWM_WINDOW_CORNER_PREFERENCE preference = DWMWCP_ROUND;
+			DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE,
+					&preference, sizeof(preference));
 
 			RECT rcClient;
 			GetWindowRect(hwnd, &rcClient);
-
 			SetWindowPos(hwnd, NULL, 100, 100, 900, 600, SWP_FRAMECHANGED);
 
 			break;
