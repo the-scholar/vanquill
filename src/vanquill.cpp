@@ -5,6 +5,7 @@
 #include <winuser.h>
 #include <iostream>
 #include <string>
+#include <dwmapi.h>
 
 #include "Drawing.hpp"
 #include "FPSCounter.hpp"
@@ -98,13 +99,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	case WM_SIZE:
 		print("WM_SIZE");
 		{
-			RECT windReg;
-			GetWindowRect(hwnd, &windReg);
-			HRGN hggn = CreateRoundRectRgn(0, 0, windReg.right - windReg.left,
-					windReg.bottom - windReg.top, 30, 30);
-			// Apply the region to the window
-			SetWindowRgn(hwnd, hggn, TRUE);
-			DeleteObject(hggn);
 
 			PAINTSTRUCT ps;
 			HDC hdc = BeginPaint(hwnd, &ps);
@@ -175,6 +169,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	case WM_CREATE:
 		print("WM_CREATE");
 		{
+
+			// ...
+			// Perform app resource initialization after window creation
+			// ...
+
+			if (hwnd) {
+				DWM_WINDOW_CORNER_PREFERENCE preference = DWMWCP_ROUND;
+				DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE,
+						&preference, sizeof(preference));
+			}
 
 			/*
 			 * Get the window rect.
