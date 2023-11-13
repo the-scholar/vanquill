@@ -101,7 +101,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 			RECT windReg;
 			GetWindowRect(hwnd, &windReg);
 			HRGN hggn = CreateRoundRectRgn(0, 0, windReg.right - windReg.left,
-					windReg.bottom - windReg.top, 30, 20);
+					windReg.bottom - windReg.top, 30, 30);
 			// Apply the region to the window
 			SetWindowRgn(hwnd, hggn, TRUE);
 
