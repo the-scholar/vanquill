@@ -116,6 +116,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 			SelectObject(backBufferDC, backBufferBitmap);
 
 			EndPaint(hwnd, &ps);
+			break;
 		}
 	case WM_EXITSIZEMOVE: {
 		RECT rect;
@@ -219,6 +220,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 			return 0;
 		}
 
+	case WM_DESTROY:
+		PostQuitMessage(0);
+		return 0;
+
 	default:
 		return DefWindowProc(hwnd, msg, wParam, lParam);
 	}
@@ -246,7 +251,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	NULL, hInstance,
 	NULL);
 
-	ShowWindow(hwnd, nCmdShow);
+	HRGN hggn = CreateRoundRectRgn(0, 0, 1000, 1000, 20, 20);
+
+	// Apply the region to the window
+	SetWindowRgn(hwnd, hggn, TRUE);
+
+	// Show the window
+	ShowWindow(hwnd, SW_SHOWDEFAULT);
+	UpdateWindow(hwnd);
 
 	// Msg loop
 	MSG msg = { };
@@ -254,6 +266,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
+
+	// Release the region
+	DeleteObject(hggn);
+
+	// Unregister the window class
+	UnregisterClass(wc.lpszClassName, wc.hInstance);
 
 	return 0;
 }
