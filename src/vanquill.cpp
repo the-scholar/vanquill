@@ -116,7 +116,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 			SelectObject(backBufferDC, backBufferBitmap);
 
 			EndPaint(hwnd, &ps);
-			break;
 		}
 	case WM_EXITSIZEMOVE: {
 		RECT rect;
