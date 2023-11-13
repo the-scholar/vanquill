@@ -104,6 +104,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 					windReg.bottom - windReg.top, 30, 30);
 			// Apply the region to the window
 			SetWindowRgn(hwnd, hggn, TRUE);
+			DeleteObject(hggn);
 
 			PAINTSTRUCT ps;
 			HDC hdc = BeginPaint(hwnd, &ps);
